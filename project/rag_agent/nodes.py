@@ -358,6 +358,28 @@ def critique_node(state: AgentState, llm, config: RunnableConfig = None):
     retry_count = state.get("critique_retry_count", 0)
     print(f"[{time.strftime('%H:%M:%S')}] critique retry_count: {retry_count} -> {retry_count + 1}")
 
+    # Budget-exhausted fallback path: the skipped-tool ToolMessage immediately
+    # before the fallback answer marks a turn with no retrieval budget left,
+    # so a failed critique would have nothing to retry with. Pass it through
+    # without running the two LLM checks.
+    messages = state.get("messages", [])
+    if (
+        len(messages) >= 2
+        and isinstance(messages[-1], AIMessage)
+        and getattr(messages[-1], "name", None) == "agent_response"
+        and isinstance(messages[-2], ToolMessage)
+        and messages[-2].content.startswith(SKIPPED_TOOL_MESSAGE)
+    ):
+        return {
+            "critique_result": {
+                "is_sup": True,
+                "is_use": True,
+                "unsupported_claims": [],
+                "reason": "skipped after fallback",
+            },
+            "critique_retry_count": retry_count + 1,
+        }
+
     critique_result = {"is_sup": True, "is_use": True, "unsupported_claims": [], "reason": ""}
     try:
         contexts_text = "\n\n".join(
