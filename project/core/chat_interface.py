@@ -1,5 +1,6 @@
 import json
 import re
+import config
 from langchain_core.messages import HumanMessage, AIMessageChunk, ToolMessage
 from core.execution_logger import log_chat_end, log_chat_start, log_error
 
@@ -103,6 +104,18 @@ class ChatInterface:
             suffix  = "\n..." if len(str(chunk.content)) > 300 else ""
             response_messages[idx]["content"] = f"```\n{preview}{suffix}\n```"
 
+    def _drop_tool_bubble(self, chunk, response_messages, active_tool_calls):
+        """Remove the collapsible bubble of an internal (synthetic) ToolMessage
+        so budget-skipped calls never surface in the chat UI. Pending bubble
+        positions after the removed one shift down by one."""
+        idx = active_tool_calls.pop(chunk.tool_call_id, None)
+        if idx is None or idx >= len(response_messages):
+            return
+        response_messages.pop(idx)
+        for tc_id, pos in active_tool_calls.items():
+            if pos > idx:
+                active_tool_calls[tc_id] = pos - 1
+
     def _handle_llm_token(self, chunk, node, response_messages):
         """Append streaming LLM tokens to the last plain assistant message."""
         last = response_messages[-1] if response_messages else None
@@ -141,7 +154,10 @@ class ChatInterface:
                     self._handle_tool_call(chunk, response_messages, active_tool_calls)
 
                 elif isinstance(chunk, ToolMessage):
-                    self._handle_tool_result(chunk, response_messages, active_tool_calls)
+                    if str(chunk.content).startswith(config.SKIPPED_TOOL_MESSAGE):
+                        self._drop_tool_bubble(chunk, response_messages, active_tool_calls)
+                    else:
+                        self._handle_tool_result(chunk, response_messages, active_tool_calls)
 
                 elif isinstance(chunk, AIMessageChunk) and chunk.content and node in FINAL_RESPONSE_NODES:
                     self._handle_llm_token(chunk, node, response_messages)

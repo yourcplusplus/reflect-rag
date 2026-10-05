@@ -31,6 +31,8 @@ class AgentState(MessagesState):
     retrieval_keys: Annotated[Set[str], set_union] = set()
     retrieved_contexts: Annotated[List[str], append_unique] = []
     final_answer: str = ""
+    critique_result: dict = {}
+    critique_retry_count: int = 0
     agent_answers: List[dict] = []
     tool_call_count: Annotated[int, operator.add] = 0
     iteration_count: Annotated[int, operator.add] = 0

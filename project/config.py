@@ -35,6 +35,7 @@ GRAPH_RECURSION_LIMIT = 50
 MAIN_HISTORY_MESSAGES_TO_KEEP = 4
 BASE_TOKEN_THRESHOLD = 2000
 TOKEN_GROWTH_FACTOR = 0.9
+SKIPPED_TOOL_MESSAGE = "Tool call skipped: research budget exceeded."
 
 # --- Terminal Execution Logging ---
 EXECUTION_LOGGING_ENABLED = False

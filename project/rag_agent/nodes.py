@@ -1,3 +1,5 @@
+import json
+import re
 from typing import Literal, Set
 from langchain_core.messages import SystemMessage, HumanMessage, RemoveMessage, AIMessage, ToolMessage
 from langgraph.types import Command
@@ -30,6 +32,7 @@ def _retrieval_contexts(messages) -> list[str]:
         "NO_PARENT_DOCUMENT",
         "RETRIEVAL_ERROR:",
         "PARENT_RETRIEVAL_ERROR:",
+        config.SKIPPED_TOOL_MESSAGE,
     )
     for message in messages:
         if not isinstance(message, ToolMessage):
@@ -190,6 +193,18 @@ def orchestrator(state: AgentState, llm_with_tools):
     return {"messages": [response], "tool_call_count": len(tool_calls) if tool_calls else 0, "iteration_count": 1}
 
 def fallback_response(state: AgentState, llm):
+    # The budget-exceeded route arrives with unanswered tool_calls still
+    # pending on the last AIMessage. Answer them with synthetic ToolMessages
+    # so the history written back to state stays valid for the API when
+    # critique later replays this conversation through the orchestrator.
+    skipped_tools = []
+    for tool_call in (getattr(state["messages"][-1], "tool_calls", None) or []):
+        skipped_tools.append(ToolMessage(
+            content=config.SKIPPED_TOOL_MESSAGE,
+            tool_call_id=tool_call["id"],
+            name=tool_call["name"],
+        ))
+
     seen = set()
     unique_contents = []
     for m in state["messages"]:
@@ -217,7 +232,7 @@ def fallback_response(state: AgentState, llm):
     )
     response = llm.invoke([SystemMessage(content=get_fallback_response_prompt()), HumanMessage(content=prompt_content)])
     response = _name_internal_message(response, "agent_response")
-    return {"messages": [response]}
+    return {"messages": skipped_tools + [response]}
 
 def should_compress_context(state: AgentState) -> Command[Literal["compress_context", "orchestrator"]]:
     messages = state["messages"]
@@ -308,6 +323,74 @@ def collect_answer(state: AgentState):
             "contexts": state.get("retrieved_contexts", []),
         }]
     }
+
+def _extract_json(text):
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if not match:
+        return None
+    try:
+        return json.loads(match.group())
+    except Exception:
+        return None
+
+def critique_node(state: AgentState, llm):
+    """Generation-layer self-reflection over the drafted answer.
+
+    Runs two LLM checks: IsSup (every factual claim is supported by the
+    retrieved contexts) and IsUse (the answer actually addresses the question).
+    On a failed check with retry budget left, injects a feedback message for
+    the orchestrator; route_after_critique decides between retry and accept.
+    Any critic-side failure (LLM error, unparsable JSON) passes the answer
+    through unchanged so a broken critic never discards a valid answer.
+    """
+    answer = state.get("final_answer", "")
+    question = state.get("question", "")
+    contexts = state.get("retrieved_contexts", [])
+    retry_count = state.get("critique_retry_count", 0)
+
+    critique_result = {"is_sup": True, "is_use": True, "unsupported_claims": [], "reason": ""}
+    try:
+        contexts_text = "\n\n".join(
+            f"--- CONTEXT {i} ---\n{context}" for i, context in enumerate(contexts, start=1)
+        ) or "(no retrieved contexts)"
+
+        sup_response = llm.invoke([
+            SystemMessage(content=get_critique_sup_prompt()),
+            HumanMessage(content=f"USER QUESTION:\n{question}\n\nDRAFTED ANSWER:\n{answer}\n\nRETRIEVED CONTEXTS:\n{contexts_text}"),
+        ])
+        sup_data = _extract_json(sup_response.content) or {}
+        claims = sup_data.get("unsupported_claims", [])
+        critique_result["is_sup"] = bool(sup_data.get("is_sup", True))
+        critique_result["unsupported_claims"] = [str(claim) for claim in claims] if isinstance(claims, list) else []
+        sup_reason = str(sup_data.get("reason", "") or "")
+
+        use_response = llm.invoke([
+            SystemMessage(content=get_critique_use_prompt()),
+            HumanMessage(content=f"USER QUESTION:\n{question}\n\nDRAFTED ANSWER:\n{answer}"),
+        ])
+        use_data = _extract_json(use_response.content) or {}
+        critique_result["is_use"] = bool(use_data.get("is_use", True))
+        use_reason = str(use_data.get("reason", "") or "")
+    except Exception:
+        return {
+            "critique_result": critique_result,
+            "critique_retry_count": retry_count + 1,
+        }
+
+    critique_result["reason"] = "\n".join(reason for reason in (sup_reason, use_reason) if reason.strip())
+
+    updates = {
+        "critique_result": critique_result,
+        "critique_retry_count": retry_count + 1,
+    }
+    failed = not (critique_result["is_sup"] and critique_result["is_use"])
+    if failed and retry_count < 1:
+        reason_text = critique_result["reason"] or "answer quality check failed"
+        updates["messages"] = [HumanMessage(
+            content=f"[CRITIQUE FEEDBACK] 你的答案存在以下问题：{reason_text}。请基于已有的 retrieved_contexts 补充检索或修正答案。",
+            name="critique_feedback",
+        )]
+    return updates
 # --- End of Agent Nodes---
 
 def aggregate_answers(state: State, llm):
@@ -320,7 +403,12 @@ def aggregate_answers(state: State, llm):
     if not state.get("agent_answers"):
         return {"messages": removals + [AIMessage(content="No answers were generated.")]}
 
-    sorted_answers = sorted(state["agent_answers"], key=lambda x: x["index"])
+    # Critique retries make collect_answer emit one entry per attempt for the
+    # same index; keep only the newest entry per index before synthesis.
+    grouped_answers = {}
+    for ans in state["agent_answers"]:
+        grouped_answers[ans["index"]] = ans
+    sorted_answers = [grouped_answers[idx] for idx in sorted(grouped_answers)]
 
     formatted_answers = ""
     for i, ans in enumerate(sorted_answers, start=1):

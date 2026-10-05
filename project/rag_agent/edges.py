@@ -38,3 +38,17 @@ def route_after_orchestrator_call(state: AgentState) -> Literal["tools", "fallba
     decision = "tools"
     log_route("after_orchestrator_call", decision, state)
     return decision
+
+def route_after_critique(state: AgentState) -> Literal["end", "orchestrator"]:
+    critique = state.get("critique_result") or {}
+    retry_count = state.get("critique_retry_count", 0)
+
+    if critique.get("is_sup") and critique.get("is_use"):
+        decision = "end"
+    elif retry_count < 2:
+        decision = "orchestrator"
+    else:
+        # Circuit breaker: accept the current answer after the retry budget.
+        decision = "end"
+    log_route("after_critique", decision, state)
+    return decision

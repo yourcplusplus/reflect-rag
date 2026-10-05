@@ -9,6 +9,7 @@ from .nodes import (
     aggregate_answers,
     collect_answer,
     compress_context,
+    critique_node,
     fallback_response,
     orchestrator,
     request_clarification,
@@ -16,7 +17,7 @@ from .nodes import (
     should_compress_context,
     summarize_history,
 )
-from .edges import route_after_orchestrator_call, route_after_rewrite
+from .edges import route_after_critique, route_after_orchestrator_call, route_after_rewrite
 
 def create_agent_graph(llm, tools_list):
     llm_with_tools = llm.bind_tools(tools_list)
@@ -32,13 +33,15 @@ def create_agent_graph(llm, tools_list):
     agent_builder.add_node("fallback_response", logged_node("agent.fallback_response", partial(fallback_response, llm=llm)))
     agent_builder.add_node("should_compress_context", logged_node("agent.should_compress_context", should_compress_context))
     agent_builder.add_node("collect_answer", logged_node("agent.collect_answer", collect_answer))
+    agent_builder.add_node("critique", logged_node("agent.critique", partial(critique_node, llm=llm)))
 
     agent_builder.add_edge(START, "orchestrator")
     agent_builder.add_conditional_edges("orchestrator", route_after_orchestrator_call, {"tools": "tools", "fallback_response": "fallback_response", "collect_answer": "collect_answer"})
     agent_builder.add_edge("tools", "should_compress_context")
     agent_builder.add_edge("compress_context", "orchestrator")
     agent_builder.add_edge("fallback_response", "collect_answer")
-    agent_builder.add_edge("collect_answer", END)
+    agent_builder.add_edge("collect_answer", "critique")
+    agent_builder.add_conditional_edges("critique", route_after_critique, {"end": END, "orchestrator": "orchestrator"})
 
     agent_subgraph = agent_builder.compile()
 
