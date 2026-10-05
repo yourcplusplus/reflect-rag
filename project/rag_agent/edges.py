@@ -1,7 +1,7 @@
 from typing import Literal
 from langgraph.types import Send
 from .graph_state import State, AgentState
-from config import MAX_ITERATIONS, MAX_TOOL_CALLS
+from config import ENABLE_CRITIQUE, MAX_ITERATIONS, MAX_TOOL_CALLS
 from core.execution_logger import log_route
 
 def route_by_intent(state: State) -> Literal["faq_answer", "rewrite_query"]:
@@ -50,6 +50,8 @@ def route_after_orchestrator_call(state: AgentState) -> Literal["tools", "fallba
     return decision
 
 def route_after_critique(state: AgentState) -> Literal["end", "orchestrator"]:
+    if not ENABLE_CRITIQUE:
+        return "end"
     critique = state.get("critique_result") or {}
     retry_count = state.get("critique_retry_count", 0)
 

@@ -11,7 +11,7 @@ from .prompts import *
 from utils import estimate_context_tokens
 from core.execution_logger import log_error
 from core.trace import collector_from_config
-from config import BASE_TOKEN_THRESHOLD, CHILD_CHUNK_SEPARATOR, DEFAULT_RETRIEVAL_K, MAIN_HISTORY_MESSAGES_TO_KEEP, SKIPPED_TOOL_MESSAGE, TOKEN_GROWTH_FACTOR
+from config import BASE_TOKEN_THRESHOLD, CHILD_CHUNK_SEPARATOR, DEFAULT_RETRIEVAL_K, ENABLE_CRITIQUE, MAIN_HISTORY_MESSAGES_TO_KEEP, SKIPPED_TOOL_MESSAGE, TOKEN_GROWTH_FACTOR
 
 if MAIN_HISTORY_MESSAGES_TO_KEEP < 2:
     raise ValueError("MAIN_HISTORY_MESSAGES_TO_KEEP must be at least 2.")
@@ -360,6 +360,10 @@ def critique_node(state: AgentState, llm, config: RunnableConfig = None):
     Any critic-side failure (LLM error, unparsable JSON) passes the answer
     through unchanged so a broken critic never discards a valid answer.
     """
+    if not ENABLE_CRITIQUE:
+        return {"critique_result": {"is_sup": True, "is_use": True, "reason": "disabled",
+                                    "unsupported_claims": []},
+                "critique_retry_count": 0}
     answer = state.get("final_answer", "")
     question = state.get("question", "")
     contexts = state.get("retrieved_contexts", [])

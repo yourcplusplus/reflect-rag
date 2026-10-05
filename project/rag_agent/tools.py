@@ -13,7 +13,7 @@ class ToolFactory:
     def __init__(self, collection):
         self.collection = collection
         self.parent_store_manager = ParentStoreManager()
-        self.reranker = FlagReranker(config.RERANKER_MODEL, use_fp16=True)
+        self.reranker = FlagReranker(config.RERANKER_MODEL, use_fp16=True) if config.ENABLE_RERANKER else None
 
     def _rerank(self, query, scored_docs, run_config: RunnableConfig = None):
         """Return docs ordered by reranker score (descending).
@@ -41,6 +41,11 @@ class ToolFactory:
                 "count": len(entries),
                 "candidates": [{k: v for k, v in entry.items() if k != "doc"} for entry in entries],
             })
+
+        if not config.ENABLE_RERANKER:
+            # Ablation variant: no reranker — keep the vector-search order and
+            # skip the reranked event entirely (no scoring happened).
+            return [entry["doc"] for entry in entries]
 
         try:
             t0 = time.perf_counter()

@@ -43,10 +43,10 @@ def build_profile() -> dict:
     """Snapshot of the ablation-relevant configuration (V0-V4 self-description)."""
     return {
         "retrieval_mode": config.DEFAULT_RETRIEVAL_MODE,
-        "reranker_enabled": True,
+        "reranker_enabled": config.ENABLE_RERANKER,
         "reranker_model": config.RERANKER_MODEL,
         "intent_router_enabled": True,
-        "critique_enabled": True,
+        "critique_enabled": config.ENABLE_CRITIQUE,
         "llm_model": config.LLM_MODEL,
         "retrieval_k": config.DEFAULT_RETRIEVAL_K,
         "top_k_multiplier": config.RERANKER_TOP_K_MULTIPLIER,

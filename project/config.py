@@ -27,6 +27,7 @@ DEFAULT_RETRIEVAL_K = 7
 DEFAULT_RETRIEVAL_MODE = os.environ.get("DEFAULT_RETRIEVAL_MODE", "hybrid")  # hybrid | sparse | dense (dense = V0 pure-vector ablation)
 RERANKER_MODEL = "BAAI/bge-reranker-v2-m3"
 RERANKER_TOP_K_MULTIPLIER = 2
+ENABLE_RERANKER = os.environ.get("ENABLE_RERANKER", "true").lower() == "true"
 CHILD_CHUNK_SEPARATOR = "\n\n<CHILD_CHUNK_BOUNDARY>\n\n"
 
 # --- Agent Configuration ---
@@ -34,6 +35,7 @@ MAX_TOOL_CALLS = 8
 MAX_ITERATIONS = 10
 GRAPH_RECURSION_LIMIT = 50
 MAIN_HISTORY_MESSAGES_TO_KEEP = 4
+ENABLE_CRITIQUE = os.environ.get("ENABLE_CRITIQUE", "true").lower() == "true"
 BASE_TOKEN_THRESHOLD = 8000
 TOKEN_GROWTH_FACTOR = 0.9
 SKIPPED_TOOL_MESSAGE = "Tool call skipped: research budget exceeded."
