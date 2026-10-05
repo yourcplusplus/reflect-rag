@@ -10,6 +10,7 @@ from .schemas import IntentClassification, QueryAnalysis
 from .prompts import *
 from utils import estimate_context_tokens
 from core.execution_logger import log_error
+from core.trace import collector_from_config
 from config import BASE_TOKEN_THRESHOLD, CHILD_CHUNK_SEPARATOR, DEFAULT_RETRIEVAL_K, MAIN_HISTORY_MESSAGES_TO_KEEP, SKIPPED_TOOL_MESSAGE, TOKEN_GROWTH_FACTOR
 
 if MAIN_HISTORY_MESSAGES_TO_KEEP < 2:
@@ -143,8 +144,15 @@ def rewrite_query(state: State, llm, config: RunnableConfig = None):
         original_query = current_query
 
     context_section = "\n\n".join(context_parts)
+    collector = collector_from_config(config)
     llm_with_structure = llm.with_structured_output(QueryAnalysis)
     response = llm_with_structure.invoke([SystemMessage(content=get_rewrite_query_prompt()), HumanMessage(content=context_section)])
+    if collector:
+        collector.emit("rewrite", "rewritten", {
+            "original": original_query,
+            "rewritten": response.questions or [],
+            "is_clear": bool(response.is_clear),
+        })
     clarification_message_update = (
         [_name_internal_message(last_message, "clarification_response")]
         if pending_query else []
@@ -357,6 +365,7 @@ def critique_node(state: AgentState, llm, config: RunnableConfig = None):
     contexts = state.get("retrieved_contexts", [])
     retry_count = state.get("critique_retry_count", 0)
     print(f"[{time.strftime('%H:%M:%S')}] critique retry_count: {retry_count} -> {retry_count + 1}")
+    collector = collector_from_config(config)
 
     # Budget-exhausted fallback path: the skipped-tool ToolMessage immediately
     # before the fallback answer marks a turn with no retrieval budget left,
@@ -370,6 +379,12 @@ def critique_node(state: AgentState, llm, config: RunnableConfig = None):
         and isinstance(messages[-2], ToolMessage)
         and messages[-2].content.startswith(SKIPPED_TOOL_MESSAGE)
     ):
+        if collector:
+            collector.emit("critique", "verdict", {
+                "is_sup": True, "is_use": True, "retry_count": retry_count + 1,
+                "unsupported_claims": [], "reason": "skipped after fallback",
+                "action": "skipped_after_fallback",
+            })
         return {
             "critique_result": {
                 "is_sup": True,
@@ -422,6 +437,15 @@ def critique_node(state: AgentState, llm, config: RunnableConfig = None):
             content=f"[CRITIQUE FEEDBACK] 你的答案存在以下问题：{reason_text}。请基于已有的 retrieved_contexts 补充检索或修正答案。",
             name="critique_feedback",
         )]
+    if collector:
+        collector.emit("critique", "verdict", {
+            "is_sup": critique_result["is_sup"],
+            "is_use": critique_result["is_use"],
+            "retry_count": retry_count + 1,
+            "unsupported_claims": critique_result["unsupported_claims"],
+            "reason": critique_result["reason"],
+            "action": "retry_injected" if "messages" in updates else "accepted",
+        })
     return updates
 # --- End of Agent Nodes---
 
@@ -452,12 +476,16 @@ def intent_router(state: State, llm, config: RunnableConfig = None):
         context_parts.append(f"Recent Conversation:\n{_format_conversation(recent_messages)}")
     context_parts.append(f"User Message:\n{current_query}")
 
+    collector = collector_from_config(config)
+    t0 = time.perf_counter()
     response = llm.with_structured_output(IntentClassification).invoke([
         SystemMessage(content=get_intent_router_prompt()),
         HumanMessage(content="\n\n".join(context_parts)),
     ])
     intent = response.intent if response and response.intent in VALID_INTENTS else DEFAULT_INTENT
     print(f"[INTENT] {intent}")
+    if collector:
+        collector.intent_classified(intent, (time.perf_counter() - t0) * 1000)
     return {"intent": intent}
 
 def faq_answer(state: State, llm, dense_collection, config: RunnableConfig = None):
@@ -489,6 +517,7 @@ def faq_answer(state: State, llm, dense_collection, config: RunnableConfig = Non
     }
 
 def aggregate_answers(state: State, llm, config: RunnableConfig = None):
+    collector = collector_from_config(config)
     messages = state.get("messages", [])
     plain_messages = [msg for msg in messages if _is_plain_conversation_message(msg)]
     keep_ids = {getattr(msg, "id", None) for msg in plain_messages[-PRE_ANSWER_HISTORY_MESSAGES_TO_KEEP:]}
@@ -511,4 +540,18 @@ def aggregate_answers(state: State, llm, config: RunnableConfig = None):
 
     user_message = HumanMessage(content=f"""Original user question: {state.get("originalQuery", "")}\nRetrieved answers:{formatted_answers}""")
     synthesis_response = llm.invoke([SystemMessage(content=get_aggregation_prompt()), user_message])
-    return {"messages": removals + [AIMessage(content=synthesis_response.content)]}
+    answer = synthesis_response.content
+    if collector:
+        cited_sources, in_sources = [], False
+        for line in answer.splitlines():
+            stripped = line.strip()
+            if stripped.lower() == "sources:":
+                in_sources = True
+                continue
+            if in_sources:
+                if stripped.startswith("- "):
+                    cited_sources.append(stripped[2:].strip())
+                elif stripped:
+                    in_sources = False
+        collector.emit("answer", "final_answer", {"answer": answer, "cited_sources": cited_sources})
+    return {"messages": removals + [AIMessage(content=answer)]}
