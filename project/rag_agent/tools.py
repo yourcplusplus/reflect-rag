@@ -1,6 +1,10 @@
+import time
+
 from FlagEmbedding import FlagReranker
+from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 import config
+from core.trace import collector_from_config
 from db.parent_store_manager import ParentStoreManager
 from core.execution_logger import log_error, log_tool_end, log_tool_start
 
@@ -11,24 +15,66 @@ class ToolFactory:
         self.parent_store_manager = ParentStoreManager()
         self.reranker = FlagReranker(config.RERANKER_MODEL, use_fp16=True)
 
-    def _rerank(self, query, docs):
+    def _rerank(self, query, scored_docs, run_config: RunnableConfig = None):
         """Return docs ordered by reranker score (descending).
 
+        Emits the retrieval candidates (vector order + fused scores) and the
+        post-rerank ordering to the request trace when one is attached.
         Falls back to the original vector-search order if the reranker fails,
         so retrieval keeps working without reranking.
         """
+        entries = []
+        for rank, (doc, fused_score) in enumerate(scored_docs):
+            entries.append({
+                "rank": rank,
+                "point_id": doc.metadata.get("_id") or f"noid_{rank}",
+                "parent_id": doc.metadata.get("parent_id", ""),
+                "source": doc.metadata.get("source", ""),
+                "fused_score": fused_score,
+                "preview": str(doc.page_content)[:250],
+                "doc": doc,
+            })
+        if collector := collector_from_config(run_config):
+            collector.emit("retrieval", "candidates", {
+                "query": query,
+                "mode": self._retrieval_mode_name(),
+                "count": len(entries),
+                "candidates": [{k: v for k, v in entry.items() if k != "doc"} for entry in entries],
+            })
+
         try:
-            pairs = [(query, doc.page_content) for doc in docs]
-            scores = self.reranker.compute_score(pairs, batch_size=4)
+            t0 = time.perf_counter()
+            scores = self.reranker.compute_score(
+                [(query, entry["doc"].page_content) for entry in entries], batch_size=4
+            )
             if not isinstance(scores, list):
                 scores = [scores]
-            ranked = sorted(zip(docs, scores), key=lambda pair: pair[1], reverse=True)
-            return [doc for doc, _ in ranked]
+            latency_ms = (time.perf_counter() - t0) * 1000
+            for entry, score in zip(entries, scores):
+                entry["rerank_score"] = float(score)
         except Exception as e:
             log_error("search_child_chunks/rerank", e)
-            return docs
+            return [entry["doc"] for entry in entries]
 
-    def _search_child_chunks(self, query: str, limit: int = config.DEFAULT_RETRIEVAL_K) -> str:
+        ordered = sorted(entries, key=lambda entry: entry["rerank_score"], reverse=True)
+        if collector:
+            pre_index = {entry["point_id"]: i for i, entry in enumerate(entries)}
+            post_rank = [entry["point_id"] for entry in ordered]
+            collector.emit("rerank", "reranked", {
+                "pre_rank": [entry["point_id"] for entry in entries],
+                "post_rank": post_rank,
+                "rerank_scores": {entry["point_id"]: entry["rerank_score"] for entry in ordered},
+                "moved_up": [pid for i, pid in enumerate(post_rank) if pre_index[pid] > i],
+                "latency_ms": round(latency_ms),
+            })
+        return [entry["doc"] for entry in ordered]
+
+    def _retrieval_mode_name(self):
+        mode = getattr(self.collection, "retrieval_mode", None)
+        value = getattr(mode, "value", None) or getattr(mode, "name", "")
+        return str(value).lower() or "hybrid"
+
+    def _search_child_chunks(self, query: str, limit: int = config.DEFAULT_RETRIEVAL_K, run_config: RunnableConfig = None) -> str:
         """Search document excerpts for evidence related to the user question.
 
         Use this as the first retrieval step. Results include parent IDs, file
@@ -43,17 +89,17 @@ class ToolFactory:
         log_tool_start("search_child_chunks", {"query": query, "limit": limit})
         try:
             recall_k = limit * config.RERANKER_TOP_K_MULTIPLIER
-            results = self.collection.similarity_search(
+            scored_docs = self.collection.similarity_search_with_score(
                 query,
                 k=recall_k,
                 score_threshold=config.RETRIEVAL_SCORE_THRESHOLD,
             )
-            if not results:
+            if not scored_docs:
                 output = "NO_RELEVANT_CHUNKS"
                 log_tool_end("search_child_chunks", output)
                 return output
 
-            results = self._rerank(query, results)[:limit]
+            results = self._rerank(query, scored_docs, run_config=run_config)[:limit]
 
             output = config.CHILD_CHUNK_SEPARATOR.join([
                 f"Parent ID: {doc.metadata.get('parent_id', '')}\n"
