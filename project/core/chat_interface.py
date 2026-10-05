@@ -1,11 +1,10 @@
 import json
 import re
-import config
 from langchain_core.messages import HumanMessage, AIMessageChunk, ToolMessage
 from core.execution_logger import log_chat_end, log_chat_start, log_error
 
 SYSTEM_NODES = {"summarize_history", "rewrite_query"}
-FINAL_RESPONSE_NODES = {"aggregate_answers"}
+FINAL_RESPONSE_NODES = {"aggregate_answers", "faq_answer"}
 
 SYSTEM_NODE_CONFIG = {
     "rewrite_query":     {"title": "🔍 Query Analysis & Rewriting"},
@@ -154,10 +153,7 @@ class ChatInterface:
                     self._handle_tool_call(chunk, response_messages, active_tool_calls)
 
                 elif isinstance(chunk, ToolMessage):
-                    if str(chunk.content).startswith(config.SKIPPED_TOOL_MESSAGE):
-                        self._drop_tool_bubble(chunk, response_messages, active_tool_calls)
-                    else:
-                        self._handle_tool_result(chunk, response_messages, active_tool_calls)
+                    self._handle_tool_result(chunk, response_messages, active_tool_calls)
 
                 elif isinstance(chunk, AIMessageChunk) and chunk.content and node in FINAL_RESPONSE_NODES:
                     self._handle_llm_token(chunk, node, response_messages)

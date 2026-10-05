@@ -4,6 +4,16 @@ from .graph_state import State, AgentState
 from config import MAX_ITERATIONS, MAX_TOOL_CALLS
 from core.execution_logger import log_route
 
+def route_by_intent(state: State) -> Literal["faq_answer", "rewrite_query"]:
+    intent = state.get("intent") or "single_hop"
+    if intent == "simple_faq":
+        decision = "faq_answer"
+    else:
+        # single_hop and multi_hop share the agentic research path.
+        decision = "rewrite_query"
+    log_route("by_intent", decision, state)
+    return decision
+
 def route_after_rewrite(state: State) -> Literal["request_clarification", "agent"]:
     if not state.get("questionIsClear", False):
         decision = "request_clarification"

@@ -4,10 +4,11 @@ from typing import Literal, Set
 from langchain_core.messages import SystemMessage, HumanMessage, RemoveMessage, AIMessage, ToolMessage
 from langgraph.types import Command
 from .graph_state import State, AgentState
-from .schemas import QueryAnalysis
+from .schemas import IntentClassification, QueryAnalysis
 from .prompts import *
 from utils import estimate_context_tokens
-from config import BASE_TOKEN_THRESHOLD, CHILD_CHUNK_SEPARATOR, MAIN_HISTORY_MESSAGES_TO_KEEP, TOKEN_GROWTH_FACTOR
+from core.execution_logger import log_error
+from config import BASE_TOKEN_THRESHOLD, CHILD_CHUNK_SEPARATOR, DEFAULT_RETRIEVAL_K, MAIN_HISTORY_MESSAGES_TO_KEEP, SKIPPED_TOOL_MESSAGE, TOKEN_GROWTH_FACTOR
 
 if MAIN_HISTORY_MESSAGES_TO_KEEP < 2:
     raise ValueError("MAIN_HISTORY_MESSAGES_TO_KEEP must be at least 2.")
@@ -32,7 +33,7 @@ def _retrieval_contexts(messages) -> list[str]:
         "NO_PARENT_DOCUMENT",
         "RETRIEVAL_ERROR:",
         "PARENT_RETRIEVAL_ERROR:",
-        config.SKIPPED_TOOL_MESSAGE,
+        SKIPPED_TOOL_MESSAGE,
     )
     for message in messages:
         if not isinstance(message, ToolMessage):
@@ -200,7 +201,7 @@ def fallback_response(state: AgentState, llm):
     skipped_tools = []
     for tool_call in (getattr(state["messages"][-1], "tool_calls", None) or []):
         skipped_tools.append(ToolMessage(
-            content=config.SKIPPED_TOOL_MESSAGE,
+            content=SKIPPED_TOOL_MESSAGE,
             tool_call_id=tool_call["id"],
             name=tool_call["name"],
         ))
@@ -393,6 +394,69 @@ def critique_node(state: AgentState, llm):
     return updates
 # --- End of Agent Nodes---
 
+# --- Main Graph: Intent Routing ---
+
+VALID_INTENTS = {"simple_faq", "single_hop", "multi_hop"}
+DEFAULT_INTENT = "single_hop"
+
+def intent_router(state: State, llm):
+    """Turn-level intent classification before query understanding.
+
+    Clarification follow-ups bypass classification: a short reply like
+    "5.2.3" would be misclassified as a research question, so the previous
+    turn's intent is kept until the clarification resolves.
+    """
+    last_message = state["messages"][-1]
+    current_query = str(last_message.content).strip()
+
+    if state.get("pendingQuery", "").strip():
+        return {"intent": state.get("intent") or DEFAULT_INTENT}
+
+    context_parts = []
+    summary = state.get("conversation_summary", "").strip()
+    if summary:
+        context_parts.append(f"Conversation Summary:\n{summary}")
+    recent_messages = _recent_conversation(state["messages"])
+    if recent_messages:
+        context_parts.append(f"Recent Conversation:\n{_format_conversation(recent_messages)}")
+    context_parts.append(f"User Message:\n{current_query}")
+
+    response = llm.with_structured_output(IntentClassification).invoke([
+        SystemMessage(content=get_intent_router_prompt()),
+        HumanMessage(content="\n\n".join(context_parts)),
+    ])
+    intent = response.intent if response and response.intent in VALID_INTENTS else DEFAULT_INTENT
+    print(f"[INTENT] {intent}")
+    return {"intent": intent}
+
+def faq_answer(state: State, llm, dense_collection):
+    """One-shot dense-only retrieval for simple FAQ intents: no BM25 and no
+    reranker by construction. Rewriting is skipped (the raw question is
+    specific enough by definition), and the result joins aggregate_answers
+    like every other path."""
+    if dense_collection is None:
+        log_error("faq_answer", RuntimeError("dense collection view is not configured"))
+        return {"messages": [AIMessage(content="The FAQ fast path is not configured in this deployment.")]}
+
+    question = str(state["messages"][-1].content).strip()
+    results = dense_collection.similarity_search(question, k=DEFAULT_RETRIEVAL_K)
+    contexts = [doc.page_content for doc in results]
+    if not contexts:
+        answer = "I couldn't find any information to answer your question in the available sources."
+    else:
+        context_text = "\n\n".join(
+            f"--- CONTEXT {i} ---\n{context}" for i, context in enumerate(contexts, start=1)
+        )
+        response = llm.invoke([
+            SystemMessage(content=get_faq_answer_prompt()),
+            HumanMessage(content=f"USER QUERY:\n{question}\n\nRETRIEVED CONTEXTS:\n{context_text}"),
+        ])
+        answer = response.content
+    return {
+        "agent_answers": [{"index": 0, "question": question, "answer": answer, "contexts": contexts}],
+        "messages": [AIMessage(content=answer)],
+    }
+
 def aggregate_answers(state: State, llm):
     messages = state.get("messages", [])
     plain_messages = [msg for msg in messages if _is_plain_conversation_message(msg)]
@@ -414,6 +478,6 @@ def aggregate_answers(state: State, llm):
     for i, ans in enumerate(sorted_answers, start=1):
         formatted_answers += (f"\nRetrieved response {i}:\n"f"{ans['answer']}\n")
 
-    user_message = HumanMessage(content=f"""Original user question: {state["originalQuery"]}\nRetrieved answers:{formatted_answers}""")
+    user_message = HumanMessage(content=f"""Original user question: {state.get("originalQuery", "")}\nRetrieved answers:{formatted_answers}""")
     synthesis_response = llm.invoke([SystemMessage(content=get_aggregation_prompt()), user_message])
     return {"messages": removals + [AIMessage(content=synthesis_response.content)]}

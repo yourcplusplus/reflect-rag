@@ -24,6 +24,7 @@ LLM_SEED = 42
 # --- Retrieval Configuration ---
 RETRIEVAL_SCORE_THRESHOLD = 0.4
 DEFAULT_RETRIEVAL_K = 7
+DEFAULT_RETRIEVAL_MODE = os.environ.get("DEFAULT_RETRIEVAL_MODE", "hybrid")  # hybrid | sparse | dense (dense = V0 pure-vector ablation)
 RERANKER_MODEL = "BAAI/bge-reranker-v2-m3"
 RERANKER_TOP_K_MULTIPLIER = 2
 CHILD_CHUNK_SEPARATOR = "\n\n<CHILD_CHUNK_BOUNDARY>\n\n"

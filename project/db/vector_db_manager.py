@@ -5,6 +5,12 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models as qmodels
 
 class VectorDbManager:
+    RETRIEVAL_MODES = {
+        "hybrid": RetrievalMode.HYBRID,
+        "sparse": RetrievalMode.SPARSE,
+        "dense": RetrievalMode.DENSE,
+    }
+
     __client: QdrantClient
     __dense_embeddings: HuggingFaceEmbeddings
     __sparse_embeddings: FastEmbedSparse
@@ -56,15 +62,36 @@ class VectorDbManager:
         except Exception as e:
             raise RuntimeError(f"Unable to delete Qdrant collection '{collection_name}'.") from e
 
-    def get_collection(self, collection_name) -> QdrantVectorStore:
+    def get_collection(self, collection_name, retrieval_mode=None):
+        """Build a QdrantVectorStore view over the collection.
+
+        retrieval_mode (a key of RETRIEVAL_MODES) overrides
+        config.DEFAULT_RETRIEVAL_MODE so ablation variants such as a
+        pure-vector V0 reuse the same client, collection, and embeddings
+        instead of needing a separate retrieval path.
+        """
+        mode_name = (retrieval_mode or config.DEFAULT_RETRIEVAL_MODE).lower()
+        if mode_name not in self.RETRIEVAL_MODES:
+            raise ValueError(
+                f"Unknown retrieval mode {mode_name!r}; expected one of {sorted(self.RETRIEVAL_MODES)}"
+            )
+        uses_sparse = mode_name != "dense"
+        view_kwargs = dict(
+            client=self.__client,
+            collection_name=collection_name,
+            embedding=self.__dense_embeddings,
+            retrieval_mode=self.RETRIEVAL_MODES[mode_name],
+        )
+        if uses_sparse:
+            view_kwargs["sparse_embedding"] = self.__sparse_embeddings
+            view_kwargs["sparse_vector_name"] = config.SPARSE_VECTOR_NAME
         try:
-            return QdrantVectorStore(
-                    client=self.__client,
-                    collection_name=collection_name,
-                    embedding=self.__dense_embeddings,
-                    sparse_embedding=self.__sparse_embeddings,
-                    retrieval_mode=RetrievalMode.HYBRID,
-                    sparse_vector_name=config.SPARSE_VECTOR_NAME
-                )
+            return QdrantVectorStore(**view_kwargs)
         except Exception as e:
             raise RuntimeError(f"Unable to initialize Qdrant collection '{collection_name}'.") from e
+
+    def get_dense_collection(self, collection_name):
+        """Pure-vector view: no BM25 sparse signals. The reranker is not
+        part of the store at all (it lives in the search tool), so a dense
+        view bypasses both by construction."""
+        return self.get_collection(collection_name, retrieval_mode="dense")
