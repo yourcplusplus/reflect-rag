@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from pprint import pformat
+import time
 from typing import Any
 
 from langchain_core.messages import AIMessage, HumanMessage, RemoveMessage, SystemMessage, ToolMessage
@@ -201,12 +202,15 @@ def log_error(scope: str, error: Exception) -> None:
 
 def logged_node(name: str, fn):
     def _wrapped(state, *args, **kwargs):
+        print(f"[{time.strftime('%H:%M:%S')}] enter {name}")
         log_node_start(name, state)
         try:
             result = fn(state, *args, **kwargs)
         except Exception as exc:
+            print(f"[{time.strftime('%H:%M:%S')}] exit {name} (ERROR: {exc})")
             log_error(name, exc)
             raise
+        print(f"[{time.strftime('%H:%M:%S')}] exit {name}")
         log_node_end(name, result)
         return result
 

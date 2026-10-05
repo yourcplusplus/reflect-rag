@@ -1,5 +1,6 @@
 import json
 import re
+import time
 from typing import Literal, Set
 from langchain_core.messages import SystemMessage, HumanMessage, RemoveMessage, AIMessage, ToolMessage
 from langgraph.types import Command
@@ -184,11 +185,17 @@ def orchestrator(state: AgentState, llm_with_tools):
     if not state.get("messages"):
         human_msg = HumanMessage(content=state["question"], name="agent_question")
         force_search = HumanMessage(content="YOU MUST CALL 'search_child_chunks' AS THE FIRST STEP TO ANSWER THIS QUESTION.")
+        _t = time.time()
+        print(f"[{time.strftime('%H:%M:%S')}] orchestrator llm.invoke start (first turn)")
         response = llm_with_tools.invoke([sys_msg] + summary_injection + [human_msg, force_search])
+        print(f"[{time.strftime('%H:%M:%S')}] orchestrator llm.invoke done ({time.time() - _t:.1f}s)")
         response = _name_internal_message(response, "agent_response")
         return {"messages": [human_msg, response], "tool_call_count": len(response.tool_calls or []), "iteration_count": 1}
 
+    _t = time.time()
+    print(f"[{time.strftime('%H:%M:%S')}] orchestrator llm.invoke start")
     response = llm_with_tools.invoke([sys_msg] + summary_injection + state["messages"])
+    print(f"[{time.strftime('%H:%M:%S')}] orchestrator llm.invoke done ({time.time() - _t:.1f}s)")
     response = _name_internal_message(response, "agent_response")
     tool_calls = response.tool_calls if hasattr(response, "tool_calls") else []
     return {"messages": [response], "tool_call_count": len(tool_calls) if tool_calls else 0, "iteration_count": 1}
@@ -348,6 +355,7 @@ def critique_node(state: AgentState, llm):
     question = state.get("question", "")
     contexts = state.get("retrieved_contexts", [])
     retry_count = state.get("critique_retry_count", 0)
+    print(f"[{time.strftime('%H:%M:%S')}] critique retry_count: {retry_count} -> {retry_count + 1}")
 
     critique_result = {"is_sup": True, "is_use": True, "unsupported_claims": [], "reason": ""}
     try:
