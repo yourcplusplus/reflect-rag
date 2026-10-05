@@ -24,6 +24,8 @@ LLM_SEED = 42
 # --- Retrieval Configuration ---
 RETRIEVAL_SCORE_THRESHOLD = 0.4
 DEFAULT_RETRIEVAL_K = 7
+RERANKER_MODEL = "BAAI/bge-reranker-v2-m3"
+RERANKER_TOP_K_MULTIPLIER = 2
 CHILD_CHUNK_SEPARATOR = "\n\n<CHILD_CHUNK_BOUNDARY>\n\n"
 
 # --- Agent Configuration ---
