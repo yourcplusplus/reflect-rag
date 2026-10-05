@@ -1,5 +1,6 @@
 import json
 import re
+from config import SKIPPED_TOOL_MESSAGE
 from langchain_core.messages import HumanMessage, AIMessageChunk, ToolMessage
 from core.execution_logger import log_chat_end, log_chat_start, log_error
 
@@ -128,13 +129,13 @@ class ChatInterface:
             yield "⚠️ System not initialized!"
             return
 
-        config        = self.rag_system.get_config()
-        current_state = self.rag_system.agent_graph.get_state(config)
+        cfg           = self.rag_system.get_config()
+        current_state = self.rag_system.agent_graph.get_state(cfg)
         log_chat_start(message.strip(), self.rag_system.thread_id, bool(current_state.next))
 
         try:
             if current_state.next:
-                self.rag_system.agent_graph.update_state(config, {"messages": [HumanMessage(content=message.strip())]})
+                self.rag_system.agent_graph.update_state(cfg, {"messages": [HumanMessage(content=message.strip())]})
                 stream_input = None
             else:
                 stream_input = {"messages": [HumanMessage(content=message.strip())]}
@@ -143,7 +144,7 @@ class ChatInterface:
             active_tool_calls  = {}
             system_node_buffer = {}
 
-            for chunk, metadata in self.rag_system.agent_graph.stream(stream_input, config=config, stream_mode="messages"):
+            for chunk, metadata in self.rag_system.agent_graph.stream(stream_input, config=cfg, stream_mode="messages"):
                 node = metadata.get("langgraph_node", "")
 
                 if node in SYSTEM_NODES and isinstance(chunk, AIMessageChunk) and chunk.content:
@@ -153,7 +154,10 @@ class ChatInterface:
                     self._handle_tool_call(chunk, response_messages, active_tool_calls)
 
                 elif isinstance(chunk, ToolMessage):
-                    self._handle_tool_result(chunk, response_messages, active_tool_calls)
+                    if str(chunk.content).startswith(SKIPPED_TOOL_MESSAGE):
+                        self._drop_tool_bubble(chunk, response_messages, active_tool_calls)
+                    else:
+                        self._handle_tool_result(chunk, response_messages, active_tool_calls)
 
                 elif isinstance(chunk, AIMessageChunk) and chunk.content and node in FINAL_RESPONSE_NODES:
                     self._handle_llm_token(chunk, node, response_messages)
@@ -163,7 +167,7 @@ class ChatInterface:
 
                 yield response_messages
 
-            final_state = self.rag_system.agent_graph.get_state(config)
+            final_state = self.rag_system.agent_graph.get_state(cfg)
             log_chat_end(getattr(final_state, "values", final_state))
 
         except Exception as e:
