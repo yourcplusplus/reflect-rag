@@ -3,6 +3,7 @@ import re
 import time
 from typing import Literal, Set
 from langchain_core.messages import SystemMessage, HumanMessage, RemoveMessage, AIMessage, ToolMessage
+from langchain_core.runnables import RunnableConfig
 from langgraph.types import Command
 from .graph_state import State, AgentState
 from .schemas import IntentClassification, QueryAnalysis
@@ -79,7 +80,7 @@ def _recent_conversation(messages, pending_query="") -> list:
 
     return recent_messages
 
-def summarize_history(state: State, llm):
+def summarize_history(state: State, llm, config: RunnableConfig = None):
     messages = state.get("messages", [])
     updates = {"agent_answers": [{"__reset__": True}]}
 
@@ -112,7 +113,7 @@ def summarize_history(state: State, llm):
     updates["conversation_summary"] = summary_response.content.strip()
     return updates
 
-def rewrite_query(state: State, llm):
+def rewrite_query(state: State, llm, config: RunnableConfig = None):
     last_message = state["messages"][-1]
     current_query = str(last_message.content).strip()
     conversation_summary = state.get("conversation_summary", "").strip()
@@ -171,11 +172,11 @@ def rewrite_query(state: State, llm):
         ],
     }
 
-def request_clarification(state: State):
+def request_clarification(state: State, config: RunnableConfig = None):
     return {}
 
 # --- Agent Nodes ---
-def orchestrator(state: AgentState, llm_with_tools):
+def orchestrator(state: AgentState, llm_with_tools, config: RunnableConfig = None):
     context_summary = state.get("context_summary", "").strip()
     sys_msg = SystemMessage(content=get_orchestrator_prompt())
     summary_injection = (
@@ -200,7 +201,7 @@ def orchestrator(state: AgentState, llm_with_tools):
     tool_calls = response.tool_calls if hasattr(response, "tool_calls") else []
     return {"messages": [response], "tool_call_count": len(tool_calls) if tool_calls else 0, "iteration_count": 1}
 
-def fallback_response(state: AgentState, llm):
+def fallback_response(state: AgentState, llm, config: RunnableConfig = None):
     # The budget-exceeded route arrives with unanswered tool_calls still
     # pending on the last AIMessage. Answer them with synthetic ToolMessages
     # so the history written back to state stays valid for the API when
@@ -242,7 +243,7 @@ def fallback_response(state: AgentState, llm):
     response = _name_internal_message(response, "agent_response")
     return {"messages": skipped_tools + [response]}
 
-def should_compress_context(state: AgentState) -> Command[Literal["compress_context", "orchestrator"]]:
+def should_compress_context(state: AgentState, config: RunnableConfig = None) -> Command[Literal["compress_context", "orchestrator"]]:
     messages = state["messages"]
 
     new_ids: Set[str] = set()
@@ -279,7 +280,7 @@ def should_compress_context(state: AgentState) -> Command[Literal["compress_cont
         goto=goto,
     )
 
-def compress_context(state: AgentState, llm):
+def compress_context(state: AgentState, llm, config: RunnableConfig = None):
     messages = state["messages"]
     existing_summary = state.get("context_summary", "").strip()
 
@@ -318,7 +319,7 @@ def compress_context(state: AgentState, llm):
 
     return {"context_summary": new_summary, "messages": [RemoveMessage(id=m.id) for m in messages[1:]]}
 
-def collect_answer(state: AgentState):
+def collect_answer(state: AgentState, config: RunnableConfig = None):
     last_message = state["messages"][-1]
     is_valid = isinstance(last_message, AIMessage) and last_message.content and not last_message.tool_calls
     answer = last_message.content if is_valid else "Unable to generate an answer."
@@ -341,7 +342,7 @@ def _extract_json(text):
     except Exception:
         return None
 
-def critique_node(state: AgentState, llm):
+def critique_node(state: AgentState, llm, config: RunnableConfig = None):
     """Generation-layer self-reflection over the drafted answer.
 
     Runs two LLM checks: IsSup (every factual claim is supported by the
@@ -407,7 +408,7 @@ def critique_node(state: AgentState, llm):
 VALID_INTENTS = {"simple_faq", "single_hop", "multi_hop"}
 DEFAULT_INTENT = "single_hop"
 
-def intent_router(state: State, llm):
+def intent_router(state: State, llm, config: RunnableConfig = None):
     """Turn-level intent classification before query understanding.
 
     Clarification follow-ups bypass classification: a short reply like
@@ -437,7 +438,7 @@ def intent_router(state: State, llm):
     print(f"[INTENT] {intent}")
     return {"intent": intent}
 
-def faq_answer(state: State, llm, dense_collection):
+def faq_answer(state: State, llm, dense_collection, config: RunnableConfig = None):
     """One-shot dense-only retrieval for simple FAQ intents: no BM25 and no
     reranker by construction. Rewriting is skipped (the raw question is
     specific enough by definition), and the result joins aggregate_answers
@@ -465,7 +466,7 @@ def faq_answer(state: State, llm, dense_collection):
         "messages": [AIMessage(content=answer)],
     }
 
-def aggregate_answers(state: State, llm):
+def aggregate_answers(state: State, llm, config: RunnableConfig = None):
     messages = state.get("messages", [])
     plain_messages = [msg for msg in messages if _is_plain_conversation_message(msg)]
     keep_ids = {getattr(msg, "id", None) for msg in plain_messages[-PRE_ANSWER_HISTORY_MESSAGES_TO_KEEP:]}

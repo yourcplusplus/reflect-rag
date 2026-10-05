@@ -1,6 +1,7 @@
 import json
 import re
 from config import SKIPPED_TOOL_MESSAGE
+from core.trace import start_trace, finish_trace
 from langchain_core.messages import HumanMessage, AIMessageChunk, ToolMessage
 from core.execution_logger import log_chat_end, log_chat_start, log_error
 
@@ -129,10 +130,12 @@ class ChatInterface:
             yield "⚠️ System not initialized!"
             return
 
+        start_trace(self.rag_system, message)
         cfg           = self.rag_system.get_config()
         current_state = self.rag_system.agent_graph.get_state(cfg)
         log_chat_start(message.strip(), self.rag_system.thread_id, bool(current_state.next))
 
+        outcome, error = "ok", None
         try:
             if current_state.next:
                 self.rag_system.agent_graph.update_state(cfg, {"messages": [HumanMessage(content=message.strip())]})
@@ -171,8 +174,13 @@ class ChatInterface:
             log_chat_end(getattr(final_state, "values", final_state))
 
         except Exception as e:
+            outcome, error = "error", e
+            if self.rag_system.trace_collector is not None:
+                self.rag_system.trace_collector.emit("error", "chat_error", {"error": str(e)})
             log_error("chat", e)
             yield f"❌ Error: {str(e)}"
+        finally:
+            finish_trace(self.rag_system, outcome, error)
 
     def clear_session(self):
         self.rag_system.reset_thread()

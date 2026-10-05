@@ -54,6 +54,10 @@ HEADERS_TO_SPLIT_ON = [
     ("###", "H3")
 ]
 
+# --- Trace ---
+TRACE_ENABLED = os.environ.get("TRACE_ENABLED", "false").lower() == "true"
+TRACE_DIR = os.path.join(_BASE_DIR, "evals", "results", "traces")
+
 # --- Langfuse Observability ---
 LANGFUSE_ENABLED = os.environ.get("LANGFUSE_ENABLED", "false").lower() == "true"
 LANGFUSE_PUBLIC_KEY = os.environ.get("LANGFUSE_PUBLIC_KEY", "")

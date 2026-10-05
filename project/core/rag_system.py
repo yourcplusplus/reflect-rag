@@ -17,6 +17,7 @@ class RAGSystem:
         self.chunker = DocumentChunker()
         self.observability = Observability()
         self.agent_graph = None
+        self.trace_collector = None
         self.thread_id = str(uuid.uuid4())
         self.recursion_limit = config.GRAPH_RECURSION_LIMIT
 
@@ -43,6 +44,8 @@ class RAGSystem:
 
     def get_config(self):
         cfg = {"configurable": {"thread_id": self.thread_id}, "recursion_limit": self.recursion_limit}
+        if self.trace_collector is not None:
+            cfg["configurable"]["trace_collector"] = self.trace_collector
         handler = self.observability.get_handler()
         if handler:
             cfg["callbacks"] = [handler]
