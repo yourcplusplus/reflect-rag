@@ -1,5 +1,5 @@
 import uuid
-from langchain_ollama import ChatOllama
+from langchain_deepseek import ChatDeepSeek
 import config
 from db.vector_db_manager import VectorDbManager
 from db.parent_store_manager import ParentStoreManager
@@ -24,10 +24,17 @@ class RAGSystem:
         self.vector_db.create_collection(self.collection_name)
         collection = self.vector_db.get_collection(self.collection_name)
 
-        llm = ChatOllama(
+        if not config.DEEPSEEK_API_KEY:
+            print("⚠️  DEEPSEEK_API_KEY is not set — chat will fail until you export it "
+                  "(e.g. in project/.env or your shell).")
+
+        # ChatDeepSeek requires a non-empty api_key to construct its client;
+        # use a placeholder so the UI can start before DEEPSEEK_API_KEY is set.
+        llm = ChatDeepSeek(
             model=config.LLM_MODEL,
+            api_key=config.DEEPSEEK_API_KEY or "EMPTY",
+            api_base=config.DEEPSEEK_BASE_URL,
             temperature=config.LLM_TEMPERATURE,
-            seed=config.LLM_SEED,
         )
         tools = ToolFactory(collection).create_tools()
         self.agent_graph = create_agent_graph(llm, tools)
