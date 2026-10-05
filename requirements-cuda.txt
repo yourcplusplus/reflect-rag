@@ -1,0 +1,17 @@
+# CUDA-specific torch build for this machine.
+#
+# The NVIDIA driver on this machine supports CUDA up to 12.4, so torch MUST be
+# the cu124 build: the default torch from PyPI is compiled for a newer CUDA and
+# silently falls back to CPU (torch.cuda.is_available() -> False).
+#
+# When re-installing on this machine, install cu124 torch FIRST, then the other
+# dependencies from requirements.txt:
+#
+#   pip install -r requirements-cuda.txt --index-url https://download.pytorch.org/whl/cu124
+#   pip install -r requirements.txt
+#
+# Equivalent to: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+# Versions verified working on 2026-10-05 (RTX 4060, driver CUDA 12.4).
+
+torch==2.6.0+cu124
+torchvision==0.21.0+cu124

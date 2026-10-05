@@ -1425,12 +1425,23 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 uv pip install -r requirements.txt
 ```
 
-#### 2. Run the Application
+#### 2. CUDA Note (GPU machines)
+
+The NVIDIA driver on the machine this project was set up on supports CUDA up to **12.4**. The default `torch` from PyPI is compiled for a newer CUDA: it installs without errors, but `torch.cuda.is_available()` returns `False`. Install the cu124 build **first**, then the remaining dependencies from `requirements.txt`:
+
+```bash
+pip install -r requirements-cuda.txt --index-url https://download.pytorch.org/whl/cu124
+pip install -r requirements.txt
+```
+
+(`requirements-cuda.txt` pins the verified cu124 build: `torch==2.6.0+cu124`, `torchvision==0.21.0+cu124`. Equivalent one-liner: `pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124`. If re-installing on this machine, always install cu124 torch before the other requirements.)
+
+#### 3. Run the Application
 ```bash
 python project/app.py
 ```
 
-#### 3. Ask Questions
+#### 4. Ask Questions
 
 Open the local URL (e.g., `http://127.0.0.1:7860`) to start chatting.
 
