@@ -502,8 +502,17 @@ def faq_answer(state: State, llm, dense_collection, config: RunnableConfig = Non
         return {"messages": [AIMessage(content="The FAQ fast path is not configured in this deployment.")]}
 
     question = str(state["messages"][-1].content).strip()
-    results = dense_collection.similarity_search(question, k=DEFAULT_RETRIEVAL_K)
-    contexts = [doc.page_content for doc in results]
+    scored = dense_collection.similarity_search_with_score(question, k=DEFAULT_RETRIEVAL_K)
+    if collector := collector_from_config(config):
+        collector.emit("retrieval", "candidates", {
+            "query": question, "mode": "dense", "count": len(scored),
+            "candidates": [{"rank": i, "point_id": d.metadata.get("_id") or f"noid_{i}",
+                            "parent_id": d.metadata.get("parent_id", ""),
+                            "source": d.metadata.get("source", ""),
+                            "fused_score": round(float(s), 4),
+                            "preview": str(d.page_content)[:250]}
+                           for i, (d, s) in enumerate(scored)]})
+    contexts = [d.page_content for d, _ in scored]
     if not contexts:
         answer = "I couldn't find any information to answer your question in the available sources."
     else:
