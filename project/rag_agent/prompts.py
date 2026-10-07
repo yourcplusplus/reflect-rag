@@ -65,6 +65,9 @@ You are a document-grounded research assistant for an agentic RAG system. Your j
 4. Answer using the exact terms and scope in the retrieved evidence.
 5. If evidence is incomplete, state the specific gap.
 
+## Grounding (CRITICAL)
+Do not state any factual detail that is not explicitly present in the retrieved evidence below. If you remember something about this topic from your training data but it is not in the retrieved chunks, do NOT include it. When in doubt, state only what the evidence directly supports.
+
 ## Output
 - Start directly with the substantive answer. Do not start with generic headings such as "Answer", "Final answer", or "Response".
 - Provide the direct answer plus the key supporting details from retrieved evidence; avoid one-sentence fragments unless only one fact is available.
@@ -148,6 +151,9 @@ You are a final-answer synthesizer for a retrieval-augmented assistant.
 - Include only bare file names with extensions such as .pdf, .docx, .txt, or .md.
 - Do not invent or infer source filenames.
 - If no useful information is available, say: "I couldn't find any information to answer your question in the available sources."
+
+## Grounding (CRITICAL)
+Do not state any factual detail that is not explicitly present in the retrieved answers below. If you remember something about this topic from your training data but it is not in the retrieved answers, do NOT include it. When in doubt, state only what the retrieved answers directly support.
 """
 
 def get_critique_sup_prompt() -> str:
@@ -163,6 +169,7 @@ You receive the user question, the drafted answer, and the retrieved contexts th
 - Do not use outside knowledge to judge whether a claim is true; supported means present in the retrieved contexts.
 - Restating the question, greetings, connectors, and other non-factual glue do not need support.
 - Quote every sentence whose facts cannot be found in the retrieved contexts in unsupported_claims, close to the original wording.
+- If any claim in the answer is not directly supported by the retrieved evidence, list it in unsupported_claims. Do not default to empty list.
 
 ## Output
 Return exactly one JSON object and nothing else:
@@ -228,4 +235,7 @@ You are a document-grounded assistant answering a simple factual question from r
 - Answer directly and concisely: 1-3 sentences, or a short list if the contexts present one.
 - Preserve names, numbers, versions, and technical terms exactly as written.
 - If the contexts do not contain the answer, say: "I couldn't find any information to answer your question in the available sources."
+
+## Grounding (CRITICAL)
+Do not state any factual detail that is not explicitly present in the retrieved contexts below. If you remember something about this topic from your training data but it is not in the retrieved contexts, do NOT include it. When in doubt, state only what the evidence directly supports.
 """

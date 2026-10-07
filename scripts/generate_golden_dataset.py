@@ -255,9 +255,10 @@ def gen_single_paper(llm, papers, target, done_keys):
             "expected_intent: 'simple_faq' if the question asks what a concept is; "
             "'single_hop' if it asks what a specific paper/document reports."
         )
+        system_extra = "The question MUST name the specific paper(s) explicitly (arXiv ID or paper name, e.g., 'GraphRAG（2404.16130）' or 'DPR（2004.04906）'). NEVER use corpus-relative references such as 'this paper', 'both papers', or 'these papers' — a standalone reader must be able to tell which paper(s) the question targets."
         human = f"PAPER: {paper['title']} ({paper['paper']})\n\nPASSAGE:\n{passage['text'][:3500]}"
         try:
-            r = gen_call(llm, schema, system, human)
+            r = gen_call(llm, schema, system + " " + system_extra, human)
         except Exception as e:
             print(f"    [skip] generation failed: {e}")
             continue
@@ -299,7 +300,8 @@ def gen_pair_questions(llm, papers, pairs, target, kind, done_keys):
                 "You create ONE comparison QA item for a RAG evaluation dataset. "
                 "The question must require contrasting the two papers (approach, mechanism, or findings). "
                 "ground_truth must synthesize BOTH passages (3-6 sentences). "
-                "evidence_a/evidence_b must be VERBATIM excerpts from the respective passages."
+                "evidence_a/evidence_b must be VERBATIM excerpts from the respective passages. "
+                "The question MUST name BOTH papers (Paper A and Paper B) explicitly (arXiv ID or paper name, e.g., 'GraphRAG（2404.16130）' or 'DPR（2004.04906）'). NEVER use corpus-relative references such as 'this paper', 'both papers', or 'these papers' — a standalone reader must be able to tell which paper(s) the question targets."
             )
             human = (f"PAPER A: {A['title']} ({pa})\nPASSAGE A:\n{pa_pass['text'][:4000]}\n\n"
                      f"PAPER B: {B['title']} ({pb})\nPASSAGE B:\n{pb_pass['text'][:4000]}")
@@ -310,7 +312,8 @@ def gen_pair_questions(llm, papers, pairs, target, kind, done_keys):
                 "The question must REQUIRE understanding paper A's conclusion/limitation in order to "
                 "interpret or evaluate paper B (e.g., 'what problem did A leave open that B addresses?'). "
                 "It must NOT be answerable from either passage alone. "
-                "reasoning_bridge explains the A→B link in one sentence."
+                "reasoning_bridge explains the A→B link in one sentence. "
+                "The question MUST name BOTH papers (Paper A and Paper B) explicitly (arXiv ID or paper name, e.g., 'GraphRAG（2404.16130）' or 'DPR（2004.04906）'). NEVER use corpus-relative references such as 'this paper', 'both papers', or 'these papers' — a standalone reader must be able to tell which paper(s) the question targets."
             )
             human = (f"PAPER A: {A['title']} ({pa})\nPASSAGE A:\n{pa_pass['text'][:4000]}\n\n"
                      f"PAPER B: {B['title']} ({pb})\nPASSAGE B:\n{pb_pass['text'][:4000]}")
@@ -377,7 +380,8 @@ def gen_term_ambiguity(llm, papers, passages_by_paper, target, done_keys):
             "If the meanings are essentially the same, you must say so. "
             "Only if there is a real divergence, create ONE QA item asking about the term's "
             "cross-paper meaning difference. ground_truth must state each paper's meaning "
-            "(format 'paper_id: meaning') and the divergence."
+            "(format 'paper_id: meaning') and the divergence. "
+        "The question MUST name the papers involved explicitly (arXiv ID or paper name, e.g., 'GraphRAG（2404.16130）' or 'DPR（2004.04906）'). NEVER use corpus-relative references such as 'this paper', 'both papers', or 'these papers' — a standalone reader must be able to tell which paper(s) the question targets."
         )
         human = f"TERM: {term}\n\nCONTEXTS:\n{context_text}"
         try:

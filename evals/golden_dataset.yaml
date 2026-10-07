@@ -537,7 +537,7 @@ items:
 - _key:
   - single_paper_factual
   - '2404.16130'
-  question: 这篇论文提出了什么方法，用于解决什么问题？
+  question: GraphRAG（2404.16130）提出了什么方法，用于解决什么问题？
   ground_truth: '这篇论文提出了 GraphRAG 方法，即一种从局部到全局的图检索增强生成方法，用于查询聚焦的摘要任务。论文标题为《From Local to Global: A GraphRAG Approach
     to Query-Focused Summarization》。'
   gold_evidence:
@@ -557,11 +557,11 @@ items:
   query_type: single_paper_factual
   id: spf-021
   review_status: approved
-  notes: ''
+  notes: 2026-10-07 改写：点名论文（原为语料相对指代）
 - _key:
   - single_paper_factual
   - '2005.11401'
-  question: 这篇论文提出了什么方法？
+  question: RAG 原论文（2005.11401）提出了什么方法？
   ground_truth: 这篇论文提出了检索增强生成（Retrieval-Augmented Generation，RAG）方法，用于知识密集型自然语言处理任务。该方法将预训练的序列到序列模型与稠密向量索引相结合，使模型能够访问和利用外部知识。
   gold_evidence:
   - Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks
@@ -580,11 +580,11 @@ items:
   query_type: single_paper_factual
   id: spf-022
   review_status: approved
-  notes: 全文核查 approved
+  notes: 全文核查 approved | 2026-10-07 改写：点名论文（原为语料相对指代）
 - _key:
   - single_paper_factual
   - '2004.12832'
-  question: 这篇论文的引言中提到了哪些神经排序模型？
+  question: ColBERT 论文（2004.12832）的引言中提到了哪些神经排序模型？
   ground_truth: 论文引言中提到，过去几年信息检索（IR）领域涌现了大量神经排序模型，包括 DRMM、KNRM 和 Duet。
   gold_evidence:
   - Over the past few years, the Information Retrieval (IR) community has witnessed the introduction of a host of
@@ -604,12 +604,12 @@ items:
   query_type: single_paper_factual
   id: spf-023
   review_status: approved
-  notes: ''
+  notes: 2026-10-07 改写：点名论文（原为语料相对指代）
 - _key:
   - single_paper_factual
   - '2501.09136'
-  question: 这篇论文的摘要是什么？
-  ground_truth: 所提供的段落中仅包含"ABSTRACT"这一标题，并未给出摘要的具体内容，因此无法从该段落中获取论文摘要的正文信息。
+  question: Agentic RAG 综述论文（2501.09136）的摘要包含哪些内容？
+  ground_truth: 该摘要宣布这是一篇对 Agentic RAG 系统的分析性综述：追溯 RAG 范式的演进；基于 agent 数量、控制结构、自治度与知识表示提出 Agentic RAG 架构分类法；对比现有框架的设计权衡；考察医疗、金融、教育与企业文档处理等领域的应用；并指出评估、协调、记忆管理、效率与治理等开放研究方向。
   gold_evidence:
   - '# **ABSTRACT**'
   provenance: extractive
@@ -627,12 +627,13 @@ items:
   query_type: single_paper_factual
   id: spf-024
   review_status: approved
-  notes: ''
+  notes: 2026-10-07 改写：点名论文（原为语料相对指代）
 - _key:
   - single_paper_factual
   - '2303.11366'
-  question: 这篇论文的标题是什么？
-  ground_truth: 无法从给定原文中确定。原文仅提供了论文的章节标题“1 Introduction”和标识“(2303.11366)”，并未给出论文的正式标题。
+  question: Reflexion 论文（2303.11366）的作者来自哪些机构？
+  ground_truth: Reflexion 论文的作者来自 Northeastern University（Noah Shinn、Federico Cassano）、Princeton University（Karthik
+    Narasimhan、Shunyu Yao）、Massachusetts Institute of Technology（Ashwin Gopinath）等机构。
   gold_evidence:
   - 1 Introduction (2303.11366)
   provenance: extractive
@@ -650,7 +651,7 @@ items:
   query_type: single_paper_factual
   id: spf-025
   review_status: approved
-  notes: ''
+  notes: 2026-10-07 改写：点名论文（原为语料相对指代）
 - _key:
   - cross_paper_comparison
   - '2404.16130'
@@ -838,9 +839,7 @@ items:
   - cross_paper_comparison
   - '2303.11366'
   - '2501.09136'
-  question: Both papers address the limitations of large language models, but they propose different mechanisms
-    for improvement. What is the core mechanism proposed in each paper, and how do their approaches to enhancing
-    LLM performance differ?
+  question: Reflexion（2303.11366）和 Agentic RAG 综述（2501.09136）分别提出了什么核心机制来增强 LLM 性能？二者的方法路径有何不同？
   ground_truth: Paper A (2303.11366) proposes "Reflexion," a framework that equips agents with dynamic memory and
     self-reflection capabilities, allowing them to verbally reflect on task feedback signals and maintain reflective
     text in an episodic memory buffer to induce better decision-making in subsequent trials. Paper B (2501.09136)
@@ -878,7 +877,7 @@ items:
   query_type: cross_paper_comparison
   id: cpc-005
   review_status: approved
-  notes: 全文核查 approved
+  notes: 全文核查 approved | 2026-10-07 改写：点名论文（原为语料相对指代）
 - _key:
   - cross_paper_comparison
   - '2303.11366'
@@ -1018,9 +1017,7 @@ items:
   - cross_paper_comparison
   - '2004.04906'
   - '2303.07678'
-  question: Both papers aim to improve retrieval for downstream tasks, but they intervene at different points in
-    the retrieval pipeline. What is the core mechanism each proposes, and how do their reported gains differ in
-    nature?
+  question: DPR（2004.04906）和 Query2doc（2303.07678）分别在检索管线的哪个环节改进下游任务的检索？两者报告的收益性质有何不同？
   ground_truth: 'DPR addresses retrieval by training a dense dual-encoder retriever so that a small set of answer-containing
     passages can be selected before a machine reader examines them, motivated by the observation that open-domain
     QA performance collapses when reading comprehension models are applied to retrieved contexts (e.g., SQuAD v1.1
@@ -1065,7 +1062,7 @@ items:
   query_type: cross_paper_comparison
   id: cpc-009
   review_status: approved
-  notes: 全文核查 approved
+  notes: 全文核查 approved | 2026-10-07 改写：点名论文（原为语料相对指代）
 - _key:
   - cross_paper_comparison
   - '2208.03299'
@@ -1546,8 +1543,7 @@ items:
   - cross_paper_comparison
   - '2307.16789'
   - '2410.05779'
-  question: How do the two papers differ in their stated motivation for why LLMs struggle with tool use, and what
-    remedy does each propose?
+  question: ToolLLaMA（2307.16789）和 LightRAG（2410.05779）两篇论文分别陈述了怎样的研究动机？各自提出的 remedy 是什么？
   ground_truth: 'Paper A attributes the deficiency to instruction tuning that focuses largely on basic language
     tasks while neglecting the tool-use domain, leaving even instruction-tuned open-source LLMs like LLaMA unable
     to appropriately interact with APIs for complex human instructions. Its remedy is a data construction, training,
@@ -1583,13 +1579,12 @@ items:
   query_type: cross_paper_comparison
   id: cpc-020
   review_status: approved
-  notes: 全文核查 approved
+  notes: 全文核查 approved | 2026-10-07 改写：点名论文（原为语料相对指代）
 - _key:
   - cross_paper_comparison
   - '2004.04906'
   - '2212.10496'
-  question: How do the two papers position themselves differently with respect to the role of supervised training
-    in dense retrieval for open-domain QA?
+  question: DPR（2004.04906）和 E5（2212.10496）在开放域问答的稠密检索中，对监督训练的定位有何不同？
   ground_truth: Paper A (DPR) frames open-domain QA as a two-stage retrieve-then-read pipeline and argues that the
     bottleneck lies in the retriever, since a machine reader's exact match on SQuAD v1.1 collapses from above 80%
     to less than 40% when applied to retrieved contexts; its contribution is therefore a trained dense retriever.
@@ -1630,7 +1625,7 @@ items:
   query_type: cross_paper_comparison
   id: cpc-021
   review_status: approved
-  notes: ''
+  notes: 2026-10-07 改写：点名论文（原为语料相对指代）
 - _key:
   - cross_paper_comparison
   - '2002.08909'
@@ -3176,7 +3171,7 @@ items:
 - _key:
   - term_ambiguity
   - agent
-  question: Does the term "agent" carry different meanings across these papers?
+  question: agent 一词在 RETRO（2112.04426）、ReAct（2210.03629）和 Toolformer（2302.04761）三篇论文中的含义是否不同？分别是什么？
   ground_truth: '2112.04426: "agent" appears only as part of the common noun phrase "literary agent" (a person who
     represents authors), i.e., an ordinary English occupational sense, not a technical term. 2210.03629: "agent"
     is a technical term denoting an entity that interacts with an environment, receiving observations ot ∈ O and
@@ -3211,7 +3206,7 @@ items:
   query_type: term_ambiguity
   id: tam-006
   review_status: approved
-  notes: ''
+  notes: 2026-10-07 改写：点名论文（原为语料相对指代）
 - _key:
   - term_ambiguity
   - natural
@@ -3641,3 +3636,4 @@ review:
   pending: 0
   rejected: 0
   frozen_at: '2026-10-06T21:00:18'
+generator_notes: 2026-10-07 人工改写 10 条语料相对指代问题（点名论文）；生成器已加同名约束

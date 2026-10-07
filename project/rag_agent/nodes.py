@@ -434,8 +434,9 @@ def critique_node(state: AgentState, llm, config: RunnableConfig = None):
         "critique_result": critique_result,
         "critique_retry_count": retry_count + 1,
     }
-    failed = not (critique_result["is_sup"] and critique_result["is_use"])
-    if failed and retry_count < 1:
+    will_retry = (len(critique_result["unsupported_claims"]) >= 2
+                  or critique_result["is_sup"] is False) and retry_count < 1
+    if will_retry:
         reason_text = critique_result["reason"] or "answer quality check failed"
         updates["messages"] = [HumanMessage(
             content=f"[CRITIQUE FEEDBACK] 你的答案存在以下问题：{reason_text}。请基于已有的 retrieved_contexts 补充检索或修正答案。",
@@ -448,7 +449,7 @@ def critique_node(state: AgentState, llm, config: RunnableConfig = None):
             "retry_count": retry_count + 1,
             "unsupported_claims": critique_result["unsupported_claims"],
             "reason": critique_result["reason"],
-            "action": "retry_injected" if "messages" in updates else "accepted",
+            "action": "retry_injected" if will_retry else "accepted",
         })
     return updates
 # --- End of Agent Nodes---

@@ -54,11 +54,13 @@ def route_after_critique(state: AgentState) -> Literal["end", "orchestrator"]:
         return "end"
     critique = state.get("critique_result") or {}
     retry_count = state.get("critique_retry_count", 0)
+    failed = (len(critique.get("unsupported_claims") or []) >= 2
+              or critique.get("is_sup") is False)
 
-    if critique.get("is_sup") and critique.get("is_use"):
-        decision = "end"
+    if not failed:
+        decision = "end"           # 证据支撑良好，接受
     elif retry_count < 2:
-        decision = "orchestrator"
+        decision = "orchestrator"  # 还有重试预算
     else:
         # Circuit breaker: accept the current answer after the retry budget.
         decision = "end"

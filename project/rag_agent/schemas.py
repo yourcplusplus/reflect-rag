@@ -20,3 +20,16 @@ class IntentClassification(BaseModel):
             "retrieval; multi_hop needs information combined from multiple places."
         )
     )
+
+
+class CritiqueVerdict(BaseModel):
+    """IsSup 判定的结构化输出：列出答案中未被证据支撑的事实性声明。"""
+    is_sup: bool = Field(
+        description="True if every factual claim in the answer is supported by the evidence."
+    )
+    unsupported_claims: list[str] = Field(
+        description="The claims that are NOT supported by the evidence (empty if all supported)."
+    )
+    reason: str = Field(
+        description="Short explanation of the verdict."
+    )
