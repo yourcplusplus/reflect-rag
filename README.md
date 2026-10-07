@@ -71,6 +71,17 @@ The generation layer must attach a `[parent_id]` citation marker to every factua
 
 **Key finding:** the Critique layer's marginal contribution is concentrated in hallucination rate (+32pp); retrieval metrics do not differ significantly across V0–V3.
 
+### Cross-scenario hallucination (dual standard)
+
+| Scenario | Hallucination-free (strict) | Hallucination-free (user-perceived) | Leakage gap | MRR | Latency |
+|---|---|---|---|---|---|
+| Classic papers (30 items, V3) | 40.0% | 96.7% | 56.7pp | 0.967 | 9.6s |
+| 2026 papers (20 items, V3) | 35.0% | 90.0% | 55.0pp | 1.000 | 14.8s |
+
+The strict standard measures whether the system stays controllable; the user-perceived standard measures whether the user is deceived. The gap between them is parametric-knowledge leakage — factually correct statements that go beyond the retrieved contexts.
+
+The cross-scenario comparison (classic papers vs. 2026 papers the model was never trained on) shows nearly identical leakage (56.7pp vs. 55.0pp), indicating that leakage is driven primarily by the generation layer's elaboration behavior rather than memorization of specific papers.
+
 ## Quick Start
 
 ```bash

@@ -16,7 +16,9 @@ from scipy import stats
 
 RUNS_DIR = Path(__file__).resolve().parents[1] / "evals" / "results" / "runs"
 NUMERIC = [("mrr", "MRR"), ("latency_ms", "Latency(ms)")]
-BINARY = [("intent_match", "路由准确"), ("veto_free", "无幻觉(veto=0)"),
+BINARY = [("intent_match", "路由准确"),
+          ("veto_free_strict", "无幻觉(严格)"),
+          ("veto_free", "无幻觉(用户感知)"),
           ("refusal_correct", "拒答正确")]
 PAIRWISE_DEFAULT = [("V0", "V2"), ("V2", "V3")]
 
@@ -63,12 +65,15 @@ def collect(payload):
         refusal_ok = None
         if r["expected_behavior"] == "refusal":
             refusal_ok = bool(r["refusal_detected"] and veto_free)
-        rows[r["id"]] = {**r, "veto_free": veto_free, "refusal_correct": refusal_ok,
+        strict_free = not r.get("hallucination_strict", r["veto_triggered"])
+        rows[r["id"]] = {**r, "veto_free": veto_free, "veto_free_strict": strict_free,
+                         "refusal_correct": refusal_ok,
                          "pass": r["intent_match"] and veto_free
                          and (refusal_ok if refusal_ok is not None else True)}
     binary = {
         "intent_match": {k for k, v in rows.items() if v["intent_match"]},
         "veto_free": {k for k, v in rows.items() if v["veto_free"]},
+        "veto_free_strict": {k for k, v in rows.items() if v["veto_free_strict"]},
         "refusal_correct": {k for k, v in rows.items() if v["refusal_correct"]},
         "pass": {k for k, v in rows.items() if v["pass"]},
     }

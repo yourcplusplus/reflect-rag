@@ -32,7 +32,7 @@ from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_deepseek import ChatDeepSeek
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from core.rag_system import RAGSystem
 from core.trace import start_trace, finish_trace, build_profile
 
@@ -84,26 +84,39 @@ def extract_contexts(messages) -> list[str]:
 
 
 class VetoVerdict(BaseModel):
-    fabricated: bool = False
-    reason: str = ""
+    """双标准幻觉判定：严格（任何超出上下文的事实）+ 用户感知（事实错误/矛盾）。"""
+    extra_unsupported: bool = Field(
+        default=False,
+        description="True if the answer contains factual details NOT present in the contexts, even if factually correct.")
+    contradictory: bool = Field(
+        default=False,
+        description="True if the answer contains factually wrong statements or statements that contradict the contexts.")
+    reason: str = Field(default="", description="Short explanation distinguishing the two.")
+
 
 
 def veto_check(veto_llm, answer: str, contexts: list[str], expected_behavior: str):
-    """Independent hallucination gate: are the answer's factual claims supported
-    by the retrieved contexts? Unanswerable items must refuse instead."""
+    """Independent hallucination gate with TWO standards.
+
+    Returns (hallucination_strict, hallucination_user, reason):
+      strict  — any factual detail beyond the retrieved contexts counts (controllability).
+      user    — only factual errors / contradictions count (user-perceived deception).
+    The gap between them quantifies parametric-knowledge leakage.
+    """
     if expected_behavior == "refusal":
         if refusal_detected(answer):
-            return False, "correct refusal"
-        return True, "unanswerable question was answered with substantive content"
+            return False, False, "correct refusal"
+        return True, True, "unanswerable question was answered with substantive content"
 
     ctx_text = "\n\n".join(f"[{i}] {c[:800]}" for i, c in enumerate(contexts, 1)) or "(no contexts)"
     system = (
-        "You are a hallucination auditor. Check whether the ANSWER contains factually "
-        "wrong statements or statements that CONTRADICT the CONTEXTS. Extra details that "
-        "are not present in the contexts but are factually correct and do NOT contradict "
-        "the contexts are NOT hallucinations — only contradictions and factual errors are. "
-        "Set fabricated=true only for such contradictions or factual errors. If the answer "
-        "only states that no relevant information was found, fabricated=false."
+        "You are a hallucination auditor producing TWO independent judgments of the ANSWER "
+        "against the CONTEXTS.\n"
+        "1) extra_unsupported: does the answer contain any factual detail that is NOT present "
+        "in the contexts (even if that detail is factually correct)?\n"
+        "2) contradictory: does the answer contain factually wrong statements or statements "
+        "that contradict the contexts?\n"
+        "If the answer only states that no relevant information was found, both are false."
     )
     human = f"CONTEXTS:\n{ctx_text}\n\nANSWER:\n{answer}"
     last = None
@@ -111,11 +124,13 @@ def veto_check(veto_llm, answer: str, contexts: list[str], expected_behavior: st
         try:
             r = veto_llm.with_structured_output(VetoVerdict).invoke(
                 [SystemMessage(content=system), HumanMessage(content=human)])
-            return bool(r.fabricated), r.reason
+            strict = bool(r.extra_unsupported or r.contradictory)
+            user = bool(r.contradictory)
+            return strict, user, r.reason
         except Exception as e:
             last = e
             time.sleep(2)
-    return False, f"veto judge unavailable: {last}"   # fail-open, never blocks the metric
+    return False, False, f"veto judge unavailable: {last}"   # fail-open, never blocks the metric
 
 
 def _norm_source(s: str) -> str:
@@ -275,8 +290,9 @@ def main():
                                  if c.get("preview")]
             contexts = previews
             contexts_source = "trace_previews" if contexts else "none"
-        veto_triggered, veto_reason = veto_check(veto_llm, answer, contexts,
-                                                 it.get("expected_behavior", "answer"))
+        hallu_strict, hallu_user, veto_reason = veto_check(veto_llm, answer, contexts,
+                                                          it.get("expected_behavior", "answer"))
+        veto_triggered = hallu_user   # 归因与旧字段沿用用户感知标准
 
         rmet = retrieval_metrics(trace_payload, set(it.get("source_papers", [])))
 
@@ -298,6 +314,7 @@ def main():
             "expected_behavior": it.get("expected_behavior", "answer"),
             "answer": answer, "refusal_detected": refusal_detected(answer),
             "veto_triggered": veto_triggered, "veto_reason": veto_reason,
+            "hallucination_strict": hallu_strict, "hallucination_user": hallu_user,
             "mrr": rmet["mrr"], "recall_candidates": rmet["recall_candidates"],
             "recall_final": rmet["recall_final"], "rerank_gain": rmet["rerank_gain"],
             "latency_ms": latency_ms,
@@ -342,6 +359,8 @@ def main():
             "total": len(results), "passed": passed,
             "intent_acc": round(statistics.mean([r["intent_match"] for r in results]) * 100, 1) if results else 0,
             "veto_rate": round(statistics.mean([1 if r["veto_triggered"] else 0 for r in results]) * 100, 1) if results else 0,
+            "no_hallucination_strict": round((1 - statistics.mean([1 if r["hallucination_strict"] else 0 for r in results])) * 100, 1) if results else 0,
+            "no_hallucination_user": round((1 - statistics.mean([1 if r["hallucination_user"] else 0 for r in results])) * 100, 1) if results else 0,
             "mean_mrr": round(statistics.mean([r["mrr"] for r in results]), 3) if results else 0,
             "mean_latency_ms": round(statistics.mean([r["latency_ms"] for r in results])) if results else 0,
             "latency_ms": {"total": sum(r["latency_ms"] for r in results), "by_layer": {k: round(v) for k, v in layer_ms_total.items()}},

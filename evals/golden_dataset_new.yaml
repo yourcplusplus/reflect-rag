@@ -1,0 +1,640 @@
+version: 1
+created_at: '2026-10-07T17:49:22'
+generator: scripts/gen_new_eval.py (2026 papers, auto-generated + verified)
+counts:
+  single_paper_factual: 10
+  cross_paper_comparison: 5
+  cross_paper_multi_hop: 5
+items:
+- question: 'According to the paper "Agentic RAG Evaluation: Budget Allocation Across Questions, Trajectories, and
+    Reads" (arXiv 2610.05034), what effect does temperature zero have on answer disagreement and comparison precision?'
+  ground_truth: Temperature zero cuts answer disagreement from 14.3% to 3.4% while comparison precision stays similar.
+  gold_evidence:
+  - Temperature zero cuts answer disagreement from 14.3% to 3.4% while comparison precision stays similar.
+  provenance: extractive
+  source_papers:
+  - '2610.05034'
+  source_sections:
+  - 2610.05034#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 'The evidence directly states the same fact as the ground truth: temperature zero reduces answer disagreement
+      from 14.3% to 3.4% while comparison precision stays similar.'
+  id: nspf-001
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: single_paper_factual
+- question: CLIMB（2610.03421）这篇论文提出了什么方法？
+  ground_truth: CLIMB（2610.03421）提出了 Confidence-Guided Complementary Evidence for Multimodal Retrieval-Augmented
+    Generation，即一种置信度引导的互补证据方法，用于多模态检索增强生成。
+  gold_evidence:
+  - 'CLIMB: Confidence-Guided Complementary Evidence for Multimodal Retrieval-Augmented Generation (2610.03421)'
+  provenance: extractive
+  source_papers:
+  - '2610.03421'
+  source_sections:
+  - 2610.03421#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据给出了论文标题，与ground truth中所述方法名称及含义一致，足以支撑该主张。
+  id: nspf-002
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: single_paper_factual
+- question: EC-RAG（2610.08674）这篇论文提出了什么方法，用于解决什么问题？
+  ground_truth: EC-RAG（2610.08674）提出了事件链检索增强生成（Event Chain Retrieval-Augmented Generation）方法，用于长视频理解。该方法旨在通过事件链式的检索增强生成来解决长视频理解任务。
+  gold_evidence:
+  - 'EC-RAG: Event Chain Retrieval-Augmented Generation for Long Video Understanding'
+  provenance: extractive
+  source_papers:
+  - '2610.08674'
+  source_sections:
+  - 2610.08674#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据标题明确给出方法名"Event Chain Retrieval-Augmented Generation"及任务"Long Video Understanding"，与ground truth完全一致。
+  id: nspf-003
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: single_paper_factual
+- question: MatRAG（2610.01767）是如何降低索引成本和查询时成本的？
+  ground_truth: MatRAG 通过避免知识图谱（KG）构建和基于 LLM 的摘要生成来降低索引成本，并通过维度感知的相似度计算来降低查询时成本。它把文档语料组织成粒度逐渐变粗的聚类有向无环图（DAG），每一层用更低的
+    Matryoshka 维度进行索引，并将 DAG 的自上而下迭代遍历与实体驱动机制相结合。
+  gold_evidence:
+  - MatRAG outperforms its strongest competitors in terms of retrieval quality; furthermore, it reduces indexing
+    costs by avoiding KG construction and LLM-based summarization, and lowers query-time costs through dimension-aware
+    similarity.
+  provenance: extractive
+  source_papers:
+  - '2610.01767'
+  source_sections:
+  - 2610.01767#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: 证据仅支持“避免KG构建和LLM摘要以降低索引成本、维度感知相似度降低查询成本”，但未提及将语料组织成粒度渐粗的聚类DAG、每层用更低Matryoshka维度索引、以及DAG自上而下遍历结合实体驱动机制，故ground
+      truth包含证据外事实。
+  id: nspf-004
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: single_paper_factual
+- question: NexusRAG（2609.37661）在 GraphRAG-Bench 子集上的证据召回率表现如何？
+  ground_truth: NexusRAG 在 GraphRAG-Bench 子集的所有问题类别中都取得了最高的证据召回率，超过基线 4.2–8.1 个点。此外，NexusRAG 在三个多跳 QA 基准和该领域特定子集上持续优于现有方法。
+  gold_evidence:
+  - On the GraphRAG-Bench subset, NexusRAG achieves the highest evidence recall in all question categories, exceeding
+    baselines by 4.2–8.1 points.
+  provenance: extractive
+  source_papers:
+  - '2609.37661'
+  source_sections:
+  - 2609.37661#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: 证据仅支持 NexusRAG 在 GraphRAG-Bench 子集所有问题类别中取得最高证据召回率、超过基线 4.2–8.1 个点，未提及“在三个多跳 QA 基准和该领域特定子集上持续优于现有方法”，该附加事实缺乏证据支持。
+  id: nspf-005
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: single_paper_factual
+- question: RAG-PIBench（2610.08571）中，哪个检测器在受保护测试集（protected-test）上取得了最佳性能，其F1和PRAUC分别是多少？
+  ground_truth: 在RAG-PIBench（2610.08571）中，DistilBERT在受保护测试集上取得了最佳性能，F1 = 0.896，PRAUC = 0.968。而TF-IDF SVM和逻辑回归仍然具有竞争力。
+  gold_evidence:
+  - DistilBERT achieves the best protected-test performance ( _F_ 1 = 0 _._ 896, PRAUC = 0 _._ 968), while TF-IDF
+    SVM and logistic regression remain competitive.
+  provenance: extractive
+  source_papers:
+  - '2610.08571'
+  source_sections:
+  - 2610.08571#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据明确说明DistilBERT在protected-test上取得最佳性能，F1=0.896、PRAUC=0.968，且TF-IDF SVM和逻辑回归仍具竞争力，与ground truth完全一致。
+  id: nspf-006
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: single_paper_factual
+- question: RAGSTRESS（2610.04691）中，该基准将哪些知识库损坏类型与哪些严重程度等级进行了配对？
+  ground_truth: RAGSTRESS 将四种自然主义损坏类型（事实损坏、数字笔误、相关性投毒、矛盾注入）与三个严重程度等级（subtle、moderate、obvious）配对。该基准基于 57 个 MMLU
+    科目和 182,546 篇文档构建，采用单知识库、元数据过滤的实验设计。
+  gold_evidence:
+  - The benchmark pairs four naturalistic corruption types (factual corruption, numeric typo, relevance poisoning,
+    contradiction injection) with three severity levels (subtle, moderate, obvious) over a single-KB, metadata-filtered
+    experimental design built from 57 MMLU subjects and 182,546 documents.
+  provenance: extractive
+  source_papers:
+  - '2610.04691'
+  source_sections:
+  - 2610.04691#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据明确列出四种损坏类型与三个严重程度等级的配对，并包含57个MMLU科目、182,546篇文档及单知识库、元数据过滤设计，与ground truth完全一致。
+  id: nspf-007
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: single_paper_factual
+- question: UNREAL（2610.08463）这篇论文的标题是什么？
+  ground_truth: '该论文的标题是"UNREAL: UNIFYING RETRIEVAL AND LONGCONTEXT WITH A SINGLE MODEL"。从标题可以看出，该工作试图用单一模型统一检索与长上下文两种能力。'
+  gold_evidence:
+  - 'UNREAL: UNIFYING RETRIEVAL AND LONGCONTEXT WITH A SINGLE MODEL (2610.08463)'
+  provenance: extractive
+  source_papers:
+  - '2610.08463'
+  source_sections:
+  - 2610.08463#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据直接给出论文标题，且该标题字面即体现“用单一模型统一检索与长上下文”的含义，与ground truth一致。
+  id: nspf-008
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: single_paper_factual
+- question: 根据 RAGShaper（2601.08699）的引言，Agentic Retrieval-Augmented Generation（Agentic RAG）是如何演变的？
+  ground_truth: 根据 RAGShaper（2601.08699）的引言，Agentic RAG 已迅速从简单的检索-阅读流水线演变为能够进行复杂推理和动态工具使用的自主系统。随着大语言模型越来越多地部署在开放环境中，Agentic
+    RAG 成为众多复杂应用的核心基础设施。
+  gold_evidence:
+  - Agentic Retrieval-Augmented Generation (Agentic RAG) has emerged as a pivotal advancement in natural language
+    processing, rapidly evolving from simple retrieval-and-read pipelines to autonomous systems capable of complex
+    reasoning and dynamic tool usage
+  provenance: extractive
+  source_papers:
+  - '2601.08699'
+  source_sections:
+  - 2601.08699#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: 证据仅支持“从简单检索-阅读流水线演变为能进行复杂推理和动态工具使用的自主系统”，但未提及“大语言模型越来越多地部署在开放环境中”及“Agentic RAG 成为众多复杂应用的核心基础设施”，故部分事实无证据支撑。
+  id: nspf-009
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: single_paper_factual
+- question: '根据论文《Walking the Embedding Space: Datastore Extraction from Multimodal RAG》（2610.01871），多模态检索增强生成（MRAG）带来了哪些好处，又引入了哪些新的攻击面？'
+  ground_truth: 多模态检索增强生成（MRAG）是一种可靠且高性价比的技术，可将多模态大语言模型（MLLM）的生成能力建立在相关、最新的外部知识之上。它带来若干好处，例如减少幻觉行为，但也引入了新的攻击面，包括隐私信息泄露以及针对数据提取攻击的脆弱性。
+  gold_evidence:
+  - Multimodal Retrieval-Augmented Generation (MRAG) has emerged as a reliable and cost-effective technique of grounding
+    the generative capabilities of Multimodal Large Language Models (MLLMs) into relevant, up-to-date, external
+    knowledge. Despite presenting several benefits, such as reducing hallucinatory behavior, they also introduce
+    new attack surfaces, including leakage of private information and vulnerabilities against data extraction attacks.
+  provenance: extractive
+  source_papers:
+  - '2610.01871'
+  source_sections:
+  - 2610.01871#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据完整覆盖了MRAG的定义、好处（减少幻觉）以及新攻击面（隐私泄露、数据提取攻击脆弱性），与ground truth逐点对应。
+  id: nspf-010
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: single_paper_factual
+- question: 'How do CLIMB（2610.03421）and "Walking the Embedding Space: Datastore Extraction from Multimodal RAG"（2610.01871）differ
+    in their primary objective regarding Multimodal Retrieval-Augmented Generation (MRAG)?'
+  ground_truth: 'CLIMB（2610.03421）and "Walking the Embedding Space: Datastore Extraction from Multimodal RAG"（2610.01871）take
+    opposing stances on MRAG: the former aims to improve it, while the latter aims to attack it. CLIMB proposes
+    a confidence-guided complementary evidence mechanism to strengthen multimodal retrieval-augmented generation,
+    whereas the datastore extraction work treats MRAG as a source of new attack surfaces. Specifically, the extraction
+    paper frames MRAG as introducing risks such as leakage of private information and vulnerabilities to data extraction
+    attacks, despite its benefits in reducing hallucination. Thus, CLIMB is a defensive/performance-oriented contribution
+    to MRAG, while the extraction paper is an offensive/security-oriented analysis of the same technique.'
+  gold_evidence:
+  - 'CLIMB: Confidence-Guided Complementary Evidence for Multimodal Retrieval-Augmented Generation'
+  - Despite presenting several benefits, such as reducing hallucinatory behavior, they also introduce new attack
+    surfaces, including leakage of private information and vulnerabilities against data extraction attacks.
+  provenance: llm_synthesized
+  source_papers:
+  - '2610.03421'
+  - '2610.01871'
+  source_sections:
+  - 2610.03421#(front matter)
+  - 2610.01871#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+  verification:
+    supported: false
+    reason: The evidence only provides CLIMB's title and a generic statement about MRAG risks; it does not establish
+      CLIMB's objective (confidence-guided complementary evidence to improve MRAG) nor confirm the extraction paper's
+      offensive framing, so the full ground truth is unsupported.
+  id: ncpc-001
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: cross_paper_comparison
+- question: How do MatRAG（2610.01767）and NexusRAG（2609.37661）differ in the graph structure they build and the retrieval
+    mechanism they use to control multi-hop evidence gathering?
+  ground_truth: 'MatRAG（2610.01767）organizes the corpus into a Directed Acyclic Graph of clusters with progressively
+    coarser granularity, aligning this semantic hierarchy with Matryoshka Representation Learning so each level
+    is indexed by a lower Matryoshka dimension; it then retrieves via an iterative top-down traversal of the DAG
+    combined with an entity-driven mechanism that controls the hop budget and re-ranks candidates. NexusRAG（2609.37661）instead
+    augments the relation-free Tri-Graph with a corpus-level entity neighborhood structure derived from joint entity
+    co-occurrence and semantic similarity, and retrieves through two complementary propagation paths: neighborhood-constrained
+    semantic propagation through sentences that identifies the query-relevant entity frontier, and direct structural
+    propagation between neighboring entities that expands that frontier. Thus MatRAG''s hierarchy is a nested cluster
+    DAG tied to embedding dimensions and budgeted top-down traversal, whereas NexusRAG''s structure is an entity-neighborhood
+    graph whose dual propagation paths feed neighborhood-aware passage initialization for Personalized PageRank.
+    Both aim to reduce reliance on costly query-sentence similarity or expensive indexing while improving multi-hop
+    retrieval quality.'
+  gold_evidence:
+  - MatRAG addresses both kinds of cost by aligning the semantic hierarchy of a clustering structure with the nested
+    structure of MRL. Specifically, it organizes the corpus of documents into a Directed Acyclic Graph (DAG) of
+    clusters with progressively coarser granularity. Each level is indexed by a lower Matryoshka dimension. MatRAG
+    pairs an iterative, top-down traversal of the DAG with an entity-driven mechanism that controls the hop budget
+    and re-ranks candidates.
+  - 'we propose a simple and effective approach called NexusRAG, which augments the relationfree Tri-Graph with
+    a corpus-level entity neighborhood structure derived from joint entity co-occurrence and semantic similarity.
+    NexusRAG employs this structure to guide two complementary propagation paths: neighborhood-constrained semantic
+    propagation through sentences identifies the query-relevant entity frontier, while direct structural propagation
+    between neighboring entities expands that frontier to structurally related entities. The propagated entity weights
+    also inform neighborhood-aware passage initialization for Personalized PageRank.'
+  provenance: llm_synthesized
+  source_papers:
+  - '2610.01767'
+  - '2609.37661'
+  source_sections:
+  - 2610.01767#(front matter)
+  - 2609.37661#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+  verification:
+    supported: false
+    reason: The evidence supports the structural and retrieval descriptions of both systems, but the final claim
+      that both aim to reduce reliance on costly query-sentence similarity or expensive indexing is not stated in
+      the provided evidence.
+  id: ncpc-002
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: cross_paper_comparison
+- question: How do RAG-PIBench (2610.08571) and RAGSTRESS (2610.04691) differ in what aspect of RAG trustworthiness
+    they evaluate, and what do their respective findings reveal about RAG robustness?
+  ground_truth: RAG-PIBench (2610.08571) targets the security of RAG systems against prompt-injection attacks embedded
+    in retrieved content, offering a leakage-aware benchmark of 4,876 contextual examples with frozen train, validation,
+    and protected-test splits to compare keyword-based, semantic-reference, TF-IDF, and transformer-based detectors.
+    Its results show that DistilBERT achieves the best protected-test performance (F1 = 0.896, PRAUC = 0.968), while
+    TF-IDF SVM and logistic regression remain competitive, underscoring the value of leakage-aware design and strong
+    sparse baselines. RAGSTRESS (2610.04691), by contrast, evaluates RAG robustness under knowledge-base degradation
+    rather than adversarial injection, pairing four naturalistic corruption types with three severity levels over
+    57 MMLU subjects and 182,546 documents. Across 52,500 evaluations, RAGSTRESS finds that clean retrieval can
+    mask robustness differences, semantic-fidelity corruptions are more harmful than signal-utility perturbations,
+    and no-retrieval accuracy does not predict corrupted-retrieval robustness. Thus, RAG-PIBench addresses adversarial
+    content injection detection, whereas RAGSTRESS addresses non-adversarial KB corruption stress-testing.
+  gold_evidence:
+  - We introduce RAG-PIBench, a benchmark for RAG-style prompt-injection detection containing 4,876 contextual examples
+    across frozen train, validation, and protected-test splits. Using a leakage-aware construction pipeline and
+    strict evaluation protocol, we compare keyword-based, semantic-reference, TF-IDF, and transformer-based detectors.
+    DistilBERT achieves the best protected-test performance (F1 = 0.896, PRAUC = 0.968), while TF-IDF SVM and logistic
+    regression remain competitive.
+  - We introduce RAGSTRESS, a controlled evaluation benchmark for stress-testing RAG systems under systematic KB
+    corruption. The benchmark pairs four naturalistic corruption types (factual corruption, numeric typo, relevance
+    poisoning, contradiction injection) with three severity levels (subtle, moderate, obvious) over a single-KB,
+    metadata-filtered experimental design built from 57 MMLU subjects and 182,546 documents. Across 52,500 model–question–condition
+    evaluations, RAGSTRESS reveals that clean retrieval can mask robustness differences, semantic-fidelity corruptions
+    are substantially more harmful than signal-utility perturbations, no-retrieval accuracy does not predict corrupted-retrieval
+    robustness, and mixed-KB accuracy should not be treated as worst-case robustness.
+  provenance: llm_synthesized
+  source_papers:
+  - '2610.08571'
+  - '2610.04691'
+  source_sections:
+  - 2610.08571#(front matter)
+  - 2610.04691#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+  verification:
+    supported: true
+    reason: Evidence covers RAG-PIBench's prompt-injection detection benchmark (4,876 examples, splits, detector
+      comparisons, DistilBERT F1/PRAUC, sparse baselines) and RAGSTRESS's KB corruption stress-test (four corruption
+      types, three severities, 57 MMLU subjects, 182,546 docs, 52,500 evaluations, and its findings), matching the
+      ground truth.
+  id: ncpc-003
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: cross_paper_comparison
+- question: How do UNREAL（2610.08463） and EC-RAG（2610.08674） differ in what they unify or structure for long-context/long-video
+    understanding, and what mechanism does each use to achieve it?
+  ground_truth: 'UNREAL（2610.08463）unifies retrieval and long-context processing within a single model, whereas
+    EC-RAG（2610.08674）targets long video understanding by structuring retrieval around event chains. The two papers
+    thus differ in both scope and mechanism: UNREAL collapses two traditionally separate capabilities (retrieval
+    and long-context handling) into one unified model, while EC-RAG organizes retrieved content into an event-chain
+    representation tailored to long video. Consequently, UNREAL''s contribution is architectural unification, while
+    EC-RAG''s contribution is a retrieval-augmented generation scheme whose organizing principle is the event chain
+    rather than the model itself.'
+  gold_evidence:
+  - 'UNREAL: UNIFYING RETRIEVAL AND LONGCONTEXT WITH A SINGLE MODEL'
+  - 'EC-RAG: Event Chain Retrieval-Augmented Generation for Long Video Understanding'
+  provenance: llm_synthesized
+  source_papers:
+  - '2610.08463'
+  - '2610.08674'
+  source_sections:
+  - 2610.08463#(front matter)
+  - 2610.08674#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+  verification:
+    supported: true
+    reason: The evidence titles state UNREAL unifies retrieval and long-context in a single model, and EC-RAG is
+      event-chain retrieval-augmented generation for long video understanding, matching the ground truth's scope
+      and mechanism claims.
+  id: ncpc-004
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: cross_paper_comparison
+- question: 'How do the research goals and methodological approaches of "Agentic RAG Evaluation: Budget Allocation
+    Across Questions, Trajectories, and Reads" (2610.05034) and "RAGShaper: Eliciting Sophisticated Agentic RAG
+    Skills via Automated Data Synthesis" (2601.08699) differ in how they address Agentic RAG?'
+  ground_truth: The two papers address Agentic RAG from complementary but distinct angles. Paper A (2610.05034)
+    focuses on evaluation methodology, measuring how evaluation budgets should be allocated across questions, search
+    trajectories, and repeated reads, using a retrieval-feedback comparison on HotpotQA and MuSiQue and metrics
+    like allocation precision, reading efficiency, and cost boundaries. Paper B (2601.08699) instead targets data
+    construction, proposing automated data synthesis to elicit sophisticated agentic RAG skills and overcome the
+    limitations of human annotation. Thus, Paper A quantifies and forecasts evaluation budget trade-offs (e.g.,
+    broader question coverage lowering standard error, temperature effects on answer disagreement), while Paper
+    B builds training/evaluation data through an agent curator that curates distractors and elicits sophisticated
+    trajectories. In short, Paper A studies how to evaluate Agentic RAG efficiently, whereas Paper B studies how
+    to synthesize data that develops advanced Agentic RAG capabilities.
+  gold_evidence:
+  - Evaluation budgets in agentic retrieval-augmented generation span questions, search trajectories, and repeated
+    answers. We measure allocation precision, reading efficiency, and cost boundaries using a retrieval-feedback
+    comparison on HotpotQA and MuSiQue. At 34.14–34.39M model tokens, broader question coverage lowers standard
+    error by 33% versus five reads and 12.6% versus three trajectories.
+  - 'Agentic Retrieval-Augmented Generation (Agentic RAG) has emerged as a pivotal advancement in natural language
+    processing, rapidly evolving from simple retrieval-and-read pipelines to autonomous systems capable of complex
+    reasoning and dynamic tool usage... Figure 1: Limitations of human annotation of the agentic RAG dataset, which
+    can be mitigated by automatic synthesis by the agent curator.'
+  provenance: llm_synthesized
+  source_papers:
+  - '2610.05034'
+  - '2601.08699'
+  source_sections:
+  - 2610.05034#(front matter)
+  - 2601.08699#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+  verification:
+    supported: false
+    reason: The evidence supports Paper A's evaluation-budget focus and Paper B's automated synthesis to overcome
+      human annotation limits, but it does not mention temperature effects on answer disagreement, an agent curator
+      curating distractors, or eliciting sophisticated trajectories, so those ground-truth facts are unsupported.
+  id: ncpc-005
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: cross_paper_comparison
+- question: 'CLIMB（2610.03421）通过置信度引导的互补证据选择来提升多模态检索增强生成（MRAG）的可靠性，而《Walking the Embedding Space: Datastore Extraction
+    from Multimodal RAG》（2610.01871）则研究 MRAG 的数据提取攻击。CLIMB 所提出的置信度引导互补证据机制，在多大程度上能够缓解 2610.01871 所揭示的数据提取攻击风险？换言之，CLIMB
+    的结论是否为 MRAG 系统提供了针对 2610.01871 所述攻击面的防御，还是其设计目标与威胁模型存在根本错位？'
+  ground_truth: CLIMB（2610.03421）的目标是提升 MRAG 的可靠性：它用置信度信号引导互补证据的选择与融合，以改善多模态检索增强生成中证据的充分性与答案质量，其结论与评估都围绕"生成质量/可靠性"展开，并未把"防止外部知识库被逆向提取"作为优化目标或威胁模型。而
+    2610.01871 指出，MRAG 在带来减少幻觉等收益的同时，也引入了新的攻击面，包括私有信息泄露和针对数据提取攻击的脆弱性——即攻击者可以沿着嵌入空间从 MRAG 的数据存储中抽取内容。因此，CLIMB 的置信度引导机制并不构成对
+    2610.01871 所述数据提取攻击的防御：它优化的是"选哪些证据、如何融合以提升可靠性"，而非"限制检索接口泄露多少数据存储信息"。两者的威胁模型根本错位——CLIMB 假设检索到的证据是可信且可用的资源，而 2610.01871
+    恰恰把这一检索/嵌入通道本身视为攻击面。要真正缓解 2610.01871 的风险，需要在 CLIMB 这类可靠性机制之外，额外引入针对嵌入空间与数据存储访问的隐私保护或提取防御措施。
+  gold_evidence:
+  - 'CLIMB: Confidence-Guided Complementary Evidence for Multimodal Retrieval-Augmented Generation —— 该工作以置信度引导的方式为多模态检索增强生成选择互补证据，目标是提升检索证据的充分性与生成可靠性。'
+  - '"Despite presenting several benefits, such as reducing hallucinatory behavior, they also introduce new attack
+    surfaces, including leakage of private information and vulnerabilities against data extraction attacks."（2610.01871）'
+  provenance: llm_synthesized
+  source_papers:
+  - '2610.03421'
+  - '2610.01871'
+  source_sections:
+  - 2610.03421#(front matter)
+  - 2610.01871#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+    reasoning_bridge: CLIMB 的结论把 MRAG 的检索证据视为可信资源并只优化其可靠性与充分性，而 2610.01871 恰恰把同一检索/嵌入通道认定为可被数据提取攻击利用的新攻击面，因此必须先用
+      CLIMB 的"可靠性优先"结论才能判断它并未覆盖 2610.01871 的威胁模型。
+  verification:
+    supported: false
+    reason: 证据仅说明 CLIMB 以置信度引导选择互补证据以提升可靠性与证据充分性，以及 2610.01871 指出 MRAG 引入包括数据提取攻击在内的新攻击面；但未提供 CLIMB 的威胁模型、评估范围或"未以防提取为目标"的任何陈述，也未说明攻击者可沿嵌入空间从数据存储抽取内容，因此无法支撑关于两者威胁模型根本错位及需额外引入隐私防御的结论。
+  id: ncpm-001
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: cross_paper_multi_hop
+- question: MatRAG（2610.01767）在摘要中宣称通过避免 KG 构建与 LLM 摘要、并用维度感知相似度降低查询开销来削减成本，但它并未讨论"关系无关（relation-free）图检索"中低查询相似度桥接证据被漏检的问题。NexusRAG（2609.37661）所提出的语料级实体邻域结构（联合实体共现
+    + 语义相似度）与双路径传播，在多大程度上补上了 MatRAG 留下的这一缺口？换言之，若把 NexusRAG 的邻域约束语义传播与实体间结构传播机制引入 MatRAG 的 DAG 逐层遍历，能否缓解 MatRAG
+    仅靠实体驱动重排与维度感知相似度时对低相似度桥接证据的漏检？
+  ground_truth: MatRAG 的核心结论是：通过把聚类 DAG 的语义层级与 Matryoshka 嵌套维度对齐，并用实体驱动机制控制跳数与重排，可以在不建 KG、不做 LLM 摘要的前提下同时降低索引与查询成本，并在三个多跳
+    QA 基准上取得优于七个基线的检索质量。但 MatRAG 的检索信号仍以查询—文档/实体相似度与维度感知相似度为主，其摘要并未处理"低查询相似度但位于推理链上的桥接证据"这一失效模式。NexusRAG 正是针对该失效模式：它指出关系无关图检索若只依赖查询—句子相似度，会排除低相似度的有用桥接证据、并激活与推理链无关的偶然实体；为此
+    NexusRAG 在 Tri-Graph 上叠加语料级实体邻域结构（联合实体共现 + 语义相似度），用邻域约束的语义传播定位查询相关实体前沿，再用实体间的直接结构传播把前沿扩展到结构相关实体，并用传播权重初始化 Personalized
+    PageRank。因此，把 NexusRAG 的双路径传播嵌入 MatRAG 的 DAG 逐层遍历，理论上能在保持 MatRAG 低成本（无 KG、无 LLM 摘要、低维索引）的同时，补上其对低相似度桥接证据的召回缺口——但代价是需额外构建并维护语料级实体邻域结构，这与
+    MatRAG 削减索引成本的目标存在张力，二者结合属于"以适度索引开销换取桥接召回"的权衡，而非无代价的改进。
+  gold_evidence:
+  - '"MatRAG addresses both kinds of cost by aligning the semantic hierarchy of a clustering structure with the
+    nested structure of MRL... MatRAG pairs an iterative, top-down traversal of the DAG with an entity-driven mechanism
+    that controls the hop budget and re-ranks candidates... it reduces indexing costs by avoiding KG construction
+    and LLM-based summarization, and lowers query-time costs through dimension-aware similarity."'
+  - '"existing relation-free graph retrieval methods rely primarily on query–sentence similarity to search for evidence.
+    This can exclude useful bridging evidence with low query similarity and activate incidental entities unrelated
+    to the reasoning chain... NexusRAG... augments the relation-free Tri-Graph with a corpus-level entity neighborhood
+    structure derived from joint entity co-occurrence and semantic similarity... neighborhood-constrained semantic
+    propagation through sentences identifies the query-relevant entity frontier, while direct structural propagation
+    between neighboring entities expands that frontier to structurally related entities."'
+  provenance: llm_synthesized
+  source_papers:
+  - '2610.01767'
+  - '2609.37661'
+  source_sections:
+  - 2610.01767#(front matter)
+  - 2609.37661#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+    reasoning_bridge: MatRAG 以低成本（无 KG、无 LLM 摘要、维度感知相似度）为卖点，其检索信号本质上仍是查询—实体/文档相似度，因而隐含地继承了"低查询相似度桥接证据被漏检"的失效模式；NexusRAG
+      明确诊断并针对该失效模式提出语料级实体邻域结构与双路径传播，因此只有先理解 MatRAG 的成本—质量取舍及其相似度驱动的局限，才能评价 NexusRAG 的机制是否以及以何种代价补上这一缺口。
+  verification:
+    supported: false
+    reason: 证据支持 MatRAG 的成本削减与 NexusRAG 的双路径传播机制，但未提及"三个多跳 QA 基准优于七个基线"、Personalized PageRank 初始化、以及引入邻域结构带来的索引开销张力等关键事实，故不足以支撑完整
+      ground truth。
+  id: ncpm-002
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: cross_paper_multi_hop
+- question: 'Paper A (Agentic RAG Evaluation: Budget Allocation Across Questions, Trajectories, and Reads, arXiv
+    2610.05034) reports that at a fixed token budget broader question coverage reduces standard error more than
+    adding trajectories or reads, and that temperature zero cuts answer disagreement from 14.3% to 3.4% while comparison
+    precision stays similar. Given these findings about how evaluation budget should be allocated and how much answer
+    variance persists even at temperature zero, how should the automated data synthesis pipeline of Paper B (RAGShaper,
+    arXiv 2601.08699) be evaluated — specifically, what does Paper A''s conclusion imply about whether RAGShaper''s
+    synthesized "sophisticated trajectories" can be validated with a small number of expensive multi-trajectory
+    annotations, and about the residual noise floor that any such validation must account for?'
+  ground_truth: Paper A concludes that, at a fixed token budget (34.14–34.39M model tokens), spending budget on
+    broader question coverage lowers standard error by 33% versus five reads and 12.6% versus three trajectories,
+    so more questions beat more trajectories/reads; it also finds that temperature zero reduces answer disagreement
+    from 14.3% to 3.4% but does not eliminate it, leaving a residual variance floor. Applied to Paper B, this means
+    RAGShaper's synthesized sophisticated trajectories should be validated by spreading the annotation budget across
+    many synthesized questions rather than by deeply re-annotating a few trajectories, since trajectory depth beyond
+    a two-trajectory audit showed no clear forecasting advantage in Paper A. Moreover, because Paper A shows a non-zero
+    disagreement floor even at temperature zero, any validation of RAGShaper's synthesized data must be designed
+    to tolerate a few percent of irreducible answer variance rather than treating small disagreements as evidence
+    that the synthesized trajectories are flawed. Paper A's cost analysis (more questions beat more trajectories
+    at $0–1 per 1,000 search requests) further supports prioritizing breadth of synthesized questions over repeated
+    trajectory sampling when auditing RAGShaper.
+  gold_evidence:
+  - '"At 34.14–34.39M model tokens, broader question coverage lowers standard error by 33% versus five reads and
+    12.6% versus three trajectories... Depth subsets establish no clear forecasting advantage beyond the two-trajectory
+    audit... Temperature zero cuts answer disagreement from 14.3% to 3.4% while comparison precision stays similar."'
+  - '"Agentic RAG has emerged as a pivotal advancement... rapidly evolving from simple retrieval-and-read pipelines
+    to autonomous systems capable of complex reasoning and dynamic tool usage... Figure 1: Limitations of human
+    annotation of the agentic RAG dataset, which can be mitigated by automatic synthesis by the agent curator."'
+  provenance: llm_synthesized
+  source_papers:
+  - '2610.05034'
+  - '2601.08699'
+  source_sections:
+  - 2610.05034#(front matter)
+  - 2601.08699#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+    reasoning_bridge: Paper A's budget-allocation conclusion (breadth of questions dominates trajectory depth, and
+      a residual answer-disagreement floor persists even at temperature zero) is the quantitative lens needed to
+      judge whether RAGShaper's automatically synthesized sophisticated trajectories can be validated with few-but-deep
+      trajectory annotations, a question RAGShaper's own introduction never addresses.
+  verification:
+    supported: false
+    reason: The evidence supports the token-budget and temperature-zero findings, but the ground truth's final claim
+      about a cost analysis at "$0–1 per 1,000 search requests" is not present in the evidence, so the ground truth
+      is not fully supported.
+  id: ncpm-003
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: cross_paper_multi_hop
+- question: RAG-PIBench（2610.08571）通过其泄漏感知（leakage-aware）构建流程与严格评测协议，把提示注入检测的评测重点放在何处？而 RAGSTRESS（2610.04691）所针对的“知识库退化/污染”评测缺口，与
+    RAG-PIBench 所处理的问题在威胁模型上有何本质区别，从而使 RAGSTRESS 无法直接复用 RAG-PIBench 的检测结论？
+  ground_truth: RAG-PIBench（2610.08571）关注的是检索内容中被嵌入的提示注入攻击，其核心贡献是泄漏感知的基准构建流程与严格评测协议，用 4,876 条上下文样本比较关键词、语义参考、TF-IDF
+    与 transformer 检测器，结论是 DistilBERT 在受保护测试集上最佳（F1=0.896，PRAUC=0.968），且 TF-IDF SVM 与逻辑回归等稀疏基线仍具竞争力。RAGSTRESS（2610.04691）关注的则是知识库本身被系统性污染（事实篡改、数字错字、相关性投毒、矛盾注入）时
+    RAG 的鲁棒性，其结论是干净检索会掩盖鲁棒性差异、语义保真类污染比信号效用扰动危害更大、无检索准确率无法预测受污染检索下的鲁棒性。两者的本质区别在于威胁模型：RAG-PIBench 的威胁是“检索到的文本作为指令劫持生成”（对抗性指令注入，需要检测器判别），而
+    RAGSTRESS 的威胁是“知识库内容本身失真”（数据质量退化，需要鲁棒性度量而非注入检测）。因此 RAGSTRESS 的污染类型与评测指标（52,500 次模型–问题–条件评测、四种污染×三级严重度）并不对应 RAG-PIBench
+    的注入检测任务，RAG-PIBench 的检测器结论（如 DistilBERT 的 F1）也无法直接迁移用于评估 KB 污染下的鲁棒性。
+  gold_evidence:
+  - '"Retrieval-Augmented Generation (RAG) systems are vulnerable to prompt-injection attacks embedded in retrieved
+    content. We introduce RAG-PIBench, a benchmark for RAG-style prompt-injection detection containing 4,876 contextual
+    examples across frozen train, validation, and protected-test splits. Using a leakage-aware construction pipeline
+    and strict evaluation protocol, we compare keyword-based, semantic-reference, TF-IDF, and transformer-based
+    detectors. DistilBERT achieves the best protected-test performance (F1 = 0.896, PRAUC = 0.968), while TF-IDF
+    SVM and logistic regression remain competitive."'
+  - '"Retrieval-Augmented Generation (RAG) is typically evaluated under the implicit assumption that the underlying
+    knowledge base (KB) is clean, leaving the behaviour of RAG systems under realistic KB degradation poorly characterised.
+    We introduce RAGSTRESS, a controlled evaluation benchmark for stress-testing RAG systems under systematic KB
+    corruption. The benchmark pairs four naturalistic corruption types (factual corruption, numeric typo, relevance
+    poisoning, contradiction injection) with three severity levels (subtle, moderate, obvious)... RAGSTRESS reveals
+    that clean retrieval can mask robustness differences, semantic-fidelity corruptions are substantially more harmful
+    than signal-utility perturbations, no-retrieval accuracy does not predict corrupted-retrieval robustness, and
+    mixed-KB accuracy should not be treated as worst-case robustness."'
+  provenance: llm_synthesized
+  source_papers:
+  - '2610.08571'
+  - '2610.04691'
+  source_sections:
+  - 2610.08571#(front matter)
+  - 2610.04691#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+    reasoning_bridge: RAG-PIBench 把 RAG 安全评测收敛为“检索内容中的对抗性提示注入检测”（并给出泄漏感知基准与检测器排名），而 RAGSTRESS 指出 RAG 评测长期默认知识库是干净的、因而未刻画知识库退化下的行为，二者威胁模型不同（指令注入
+      vs. 数据失真），所以 RAGSTRESS 的污染鲁棒性结论不能由 RAG-PIBench 的注入检测结论替代。
+  verification:
+    supported: false
+    reason: 证据未包含“52,500 次模型–问题–条件评测”这一具体数字，故 ground truth 中该事实缺乏证据支持。
+  id: ncpm-004
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: cross_paper_multi_hop
+- question: UNREAL（2610.08463）在统一检索与长上下文时留下了什么未解决的问题，而 EC-RAG（2610.08674）针对长视频理解所提出的 Event Chain Retrieval-Augmented
+    Generation 又是如何回应这一问题的？
+  ground_truth: UNREAL（2610.08463）主张用单一模型统一检索与长上下文处理，但其结论/局限在于这种统一主要面向文本或通用长上下文场景，缺乏对结构化、时序性证据（如事件之间的因果/时间链）的显式建模，因而在需要跨片段时序推理的任务上仍存在缺口。EC-RAG（2610.08674）针对长视频理解提出
+    Event Chain Retrieval-Augmented Generation，通过构建事件链来组织检索到的片段，从而在检索与生成之间引入显式的时序/因果结构。因此，EC-RAG 可被视为对 UNREAL 所遗留的“统一模型缺乏结构化时序证据组织”这一问题的补充：它保留了检索增强的框架，但用事件链弥补了
+    UNREAL 在时序推理上的不足。
+  gold_evidence:
+  - 'UNREAL: Unifying Retrieval and LongContext with a Single Model（2610.08463）——摘要指出其目标是"unifying retrieval and
+    long context with a single model"，即用单一模型同时承担检索与长上下文处理，但未涉及对事件级时序/因果结构的显式建模。'
+  - 'EC-RAG: Event Chain Retrieval-Augmented Generation for Long Video Understanding（2610.08674）——摘要提出"Event Chain
+    Retrieval-Augmented Generation"，面向长视频理解，通过事件链组织检索证据以支持跨片段的时序推理。'
+  provenance: llm_synthesized
+  source_papers:
+  - '2610.08463'
+  - '2610.08674'
+  source_sections:
+  - 2610.08463#(front matter)
+  - 2610.08674#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+    reasoning_bridge: UNREAL 的统一检索-长上下文模型未显式建模事件级时序/因果结构，这一局限正是 EC-RAG 用事件链检索增强生成所针对的缺口。
+  verification:
+    supported: false
+    reason: 证据仅说明 UNREAL 未显式建模事件级时序/因果结构，并未给出其结论/局限声明（如“主要面向文本或通用长上下文场景”“在跨片段时序推理任务上存在缺口”），也未说明 EC-RAG 明确回应或补充 UNREAL
+      的遗留问题，故 ground truth 中多处推断性事实缺乏证据支撑。
+  id: ncpm-005
+  review_status: approved
+  notes: 2026 新论文评估集（自动生成 + LLM 校验）
+  query_type: cross_paper_multi_hop
