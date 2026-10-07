@@ -98,10 +98,12 @@ def veto_check(veto_llm, answer: str, contexts: list[str], expected_behavior: st
 
     ctx_text = "\n\n".join(f"[{i}] {c[:800]}" for i, c in enumerate(contexts, 1)) or "(no contexts)"
     system = (
-        "You are a hallucination auditor. For each factual claim in the ANSWER, "
-        "check whether it is supported by the CONTEXTS. fabricated=true if ANY "
-        "factual claim lacks support in the contexts. If the answer only states "
-        "that no relevant information was found, fabricated=false."
+        "You are a hallucination auditor. Check whether the ANSWER contains factually "
+        "wrong statements or statements that CONTRADICT the CONTEXTS. Extra details that "
+        "are not present in the contexts but are factually correct and do NOT contradict "
+        "the contexts are NOT hallucinations — only contradictions and factual errors are. "
+        "Set fabricated=true only for such contradictions or factual errors. If the answer "
+        "only states that no relevant information was found, fabricated=false."
     )
     human = f"CONTEXTS:\n{ctx_text}\n\nANSWER:\n{answer}"
     last = None
@@ -254,16 +256,28 @@ def main():
         answer = str(ai_msgs[0].content) if ai_msgs else ""
         intent = values.get("intent")
 
-        contexts = extract_contexts(tool_messages)
-        veto_triggered, veto_reason = veto_check(veto_llm, answer, contexts,
-                                                 it.get("expected_behavior", "answer"))
-
         trace_payload = {}
         if trace_path:
             try:
                 trace_payload = json.loads(Path(trace_path).read_text(encoding="utf-8"))
             except Exception:
                 pass
+
+        contexts = extract_contexts(tool_messages)
+        contexts_source = "tool_messages" if contexts else "none"
+        if not contexts:
+            # faq 路径没有 ToolMessage：从 trace candidates 的 preview 拼接上下文
+            #（250 字符截断，但远好于让 veto 在零上下文下判定）
+            previews = []
+            for e in trace_payload.get("events", []):
+                if e["event"] == "candidates":
+                    previews += [c.get("preview", "") for c in e["data"].get("candidates", [])
+                                 if c.get("preview")]
+            contexts = previews
+            contexts_source = "trace_previews" if contexts else "none"
+        veto_triggered, veto_reason = veto_check(veto_llm, answer, contexts,
+                                                 it.get("expected_behavior", "answer"))
+
         rmet = retrieval_metrics(trace_payload, set(it.get("source_papers", [])))
 
         intent_match = (intent == it.get("expected_intent"))
@@ -292,6 +306,7 @@ def main():
             "token_usage": {"calls": usage.calls, "prompt_tokens": usage.prompt_tokens,
                             "completion_tokens": usage.completion_tokens},
             "critique_action": crit_action,
+            "contexts_source": contexts_source,
             "failure_attribution": attribution,
             "contexts": contexts,
             "trace_path": str(trace_path) if trace_path else None,

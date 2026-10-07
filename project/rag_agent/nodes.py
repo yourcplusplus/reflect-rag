@@ -518,7 +518,8 @@ def faq_answer(state: State, llm, dense_collection, config: RunnableConfig = Non
         answer = "I couldn't find any information to answer your question in the available sources."
     else:
         context_text = "\n\n".join(
-            f"--- CONTEXT {i} ---\n{context}" for i, context in enumerate(contexts, start=1)
+            f"--- CONTEXT {i} ---\nParent ID: {d.metadata.get('parent_id', '')}\nContent: {d.page_content}"
+            for i, (d, _) in enumerate(scored, start=1)
         )
         response = llm.invoke([
             SystemMessage(content=get_faq_answer_prompt()),
@@ -529,6 +530,23 @@ def faq_answer(state: State, llm, dense_collection, config: RunnableConfig = Non
         "agent_answers": [{"index": 0, "question": question, "answer": answer, "contexts": contexts}],
         "messages": [AIMessage(content=answer)],
     }
+
+_CITATION_RE = re.compile(r"\[[A-Za-z0-9\.\-]+_p\d+\]")
+
+
+def _citation_coverage(answer: str):
+    """事实性句子的引用覆盖率。返回 (coverage, covered, total)。
+
+    排除 Sources 段与短句，按句号/换行切分，>=15 字符的句子计为事实性句子。
+    """
+    main = re.split(r"(?i)\n\s*Sources:", answer)[0]
+    # 英文标点后必须跟空白才切分——否则 "2401.18059" 里的点号会切开引用标记
+    sentences = [s.strip() for s in re.split(r"(?<=[。！？])\s*|(?<=[.!?])\s+|\n+", main) if len(s.strip()) >= 15]
+    if not sentences:
+        return 1.0, 0, 0
+    covered = sum(1 for s in sentences if _CITATION_RE.search(s))
+    return covered / len(sentences), covered, len(sentences)
+
 
 def aggregate_answers(state: State, llm, config: RunnableConfig = None):
     collector = collector_from_config(config)
@@ -555,6 +573,31 @@ def aggregate_answers(state: State, llm, config: RunnableConfig = None):
     user_message = HumanMessage(content=f"""Original user question: {state.get("originalQuery", "")}\nRetrieved answers:{formatted_answers}""")
     synthesis_response = llm.invoke([SystemMessage(content=get_aggregation_prompt()), user_message])
     answer = synthesis_response.content
+
+    # 优化 1：引用覆盖率后处理——>30% 事实句无 [chunk_id] 时重试一次，仍不达标加标注
+    _refusal = any(h in answer.lower() for h in
+                   ("couldn't find", "could not find", "no information", "no relevant",
+                    "未找到", "没有找到", "无法找到", "未收录", "不包含", "未发现"))
+    coverage, covered, total = (1.0, 0, 0) if _refusal else _citation_coverage(answer)
+    citation_retried = False
+    if total > 0 and coverage < 0.7:
+        citation_retried = True
+        retry_resp = llm.invoke([
+            SystemMessage(content=get_aggregation_prompt()),
+            HumanMessage(content=(
+                f"Original user question: {state.get('originalQuery', '')}\n"
+                f"Retrieved answers:\n{formatted_answers}\n\n"
+                f"Your previous attempt had {total - covered}/{total} factual sentences without "
+                f"a [chunk_id] citation marker. Regenerate the answer. Every factual statement "
+                f"must carry a [chunk_id] citation (the chunk's Parent ID, e.g., [2401.18059_p11]); "
+                f"delete any statement you cannot attribute to a chunk. "
+                f"Previous attempt:\n{answer}")),
+        ])
+        answer = retry_resp.content
+        coverage, covered, total = _citation_coverage(answer)
+        if total > 0 and coverage < 0.7:
+            answer = answer.rstrip() + "\n\n（部分内容未找到直接证据）"
+
     if collector:
         cited_sources, in_sources = [], False
         for line in answer.splitlines():
@@ -567,5 +610,8 @@ def aggregate_answers(state: State, llm, config: RunnableConfig = None):
                     cited_sources.append(stripped[2:].strip())
                 elif stripped:
                     in_sources = False
-        collector.emit("answer", "final_answer", {"answer": answer, "cited_sources": cited_sources})
+        collector.emit("answer", "final_answer", {
+            "answer": answer, "cited_sources": cited_sources,
+            "citation_coverage": round(coverage, 3), "citation_retried": citation_retried,
+        })
     return {"messages": removals + [AIMessage(content=answer)]}

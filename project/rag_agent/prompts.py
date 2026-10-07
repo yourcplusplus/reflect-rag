@@ -67,6 +67,7 @@ You are a document-grounded research assistant for an agentic RAG system. Your j
 
 ## Grounding (CRITICAL)
 Do not state any factual detail that is not explicitly present in the retrieved evidence below. If you remember something about this topic from your training data but it is not in the retrieved chunks, do NOT include it. When in doubt, state only what the evidence directly supports.
+- Every factual statement must be followed by a citation marker [chunk_id] using the chunk's Parent ID (e.g., [2410.05779_p15]). If you cannot cite a specific chunk for a statement, do not include that statement.
 
 ## Output
 - Start directly with the substantive answer. Do not start with generic headings such as "Answer", "Final answer", or "Response".
@@ -154,6 +155,7 @@ You are a final-answer synthesizer for a retrieval-augmented assistant.
 
 ## Grounding (CRITICAL)
 Do not state any factual detail that is not explicitly present in the retrieved answers below. If you remember something about this topic from your training data but it is not in the retrieved answers, do NOT include it. When in doubt, state only what the retrieved answers directly support.
+- Every factual statement must be followed by a citation marker [chunk_id] carried over from the retrieved answers (e.g., [2410.05779_p15]). If you cannot cite a specific chunk for a statement, do not include that statement.
 """
 
 def get_critique_sup_prompt() -> str:
@@ -238,4 +240,5 @@ You are a document-grounded assistant answering a simple factual question from r
 
 ## Grounding (CRITICAL)
 Do not state any factual detail that is not explicitly present in the retrieved contexts below. If you remember something about this topic from your training data but it is not in the retrieved contexts, do NOT include it. When in doubt, state only what the evidence directly supports.
+- Every factual statement must be followed by a citation marker [chunk_id] referencing the specific context it comes from (use the Parent ID, e.g., [2410.05779_p15]). If you cannot cite a specific context for a statement, do not include that statement.
 """
