@@ -11,6 +11,7 @@ from .prompts import *
 from utils import estimate_context_tokens
 from core.execution_logger import log_error
 from core.trace import collector_from_config
+from .tools import rerank_top1_for
 from config import BASE_TOKEN_THRESHOLD, CHILD_CHUNK_SEPARATOR, DEFAULT_RETRIEVAL_K, ENABLE_CRITIQUE, MAIN_HISTORY_MESSAGES_TO_KEEP, SKIPPED_TOOL_MESSAGE, TOKEN_GROWTH_FACTOR
 
 if MAIN_HISTORY_MESSAGES_TO_KEEP < 2:
@@ -396,6 +397,21 @@ def critique_node(state: AgentState, llm, config: RunnableConfig = None):
                 "unsupported_claims": [],
                 "reason": "skipped after fallback",
             },
+            "critique_retry_count": retry_count + 1,
+        }
+
+    # 优化 1：短答案 + 高检索置信度 → 跳过 critique（边际价值低、token 成本高）
+    top1 = rerank_top1_for(config)
+    if len(answer) < 200 and top1 is not None and top1 > 0.7:
+        if collector:
+            collector.emit("critique", "verdict", {
+                "is_sup": True, "is_use": True, "retry_count": retry_count + 1,
+                "unsupported_claims": [], "reason": "skipped_low_risk",
+                "action": "skipped_low_risk",
+            })
+        return {
+            "critique_result": {"is_sup": True, "is_use": True, "unsupported_claims": [],
+                                "reason": "skipped_low_risk"},
             "critique_retry_count": retry_count + 1,
         }
 

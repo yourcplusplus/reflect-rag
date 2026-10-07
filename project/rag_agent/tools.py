@@ -8,6 +8,17 @@ from core.trace import collector_from_config
 from db.parent_store_manager import ParentStoreManager
 from core.execution_logger import log_error, log_tool_end, log_tool_start
 
+# 优化 1 通道：最近一次检索的 top-1 rerank 分数（按 thread_id 隔离，供 critique 低风险判定）
+_RERANK_TOP1_BY_THREAD: dict = {}
+
+
+def rerank_top1_for(run_config) -> float | None:
+    if not isinstance(run_config, dict):
+        return None
+    tid = (run_config.get("configurable") or {}).get("thread_id")
+    return _RERANK_TOP1_BY_THREAD.get(tid)
+
+
 class ToolFactory:
 
     def __init__(self, collection):
@@ -62,6 +73,10 @@ class ToolFactory:
             return [entry["doc"] for entry in entries]
 
         ordered = sorted(entries, key=lambda entry: entry["rerank_score"], reverse=True)
+        if ordered and isinstance(run_config, dict):
+            tid = (run_config.get("configurable") or {}).get("thread_id")
+            if tid:
+                _RERANK_TOP1_BY_THREAD[tid] = ordered[0]["rerank_score"]
         if collector:
             pre_index = {entry["point_id"]: i for i, entry in enumerate(entries)}
             post_rank = [entry["point_id"] for entry in ordered]
