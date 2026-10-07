@@ -20,3 +20,4 @@ notebooks/rag_evaluation_*.csv
 notebooks/rag_evaluation_*.png
 evals/results/traces/*.json
 evals/results/traces/index.jsonl
+evals/results/runs/
