@@ -170,6 +170,7 @@ def main():
     ap.add_argument("--limit", type=int, default=None, help="只跑前 N 条 approved（试跑用）")
     ap.add_argument("--query-type", default=None, help="只跑指定类目")
     ap.add_argument("--ragas", action="store_true", help="启用 RAGAS 指标（额外 token 成本）")
+    ap.add_argument("--resume", default=None, help="续跑：指向已有的 run 目录（含 results_partial.jsonl）")
     args = ap.parse_args()
 
     data = yaml.safe_load(Path(args.dataset).read_text(encoding="utf-8"))
@@ -194,15 +195,32 @@ def main():
         print(f"ERROR: {e}\n（Qdrant 被占用——先停掉正在运行的 app）")
         return 2
 
-    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    out_dir = RUNS_DIR / args.variant / stamp
+    if args.resume:
+        out_dir = Path(args.resume)
+        if not out_dir.is_dir():
+            print(f"ERROR: resume 目录不存在: {out_dir}")
+            return 2
+    else:
+        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        out_dir = RUNS_DIR / args.variant / stamp
     out_dir.mkdir(parents=True, exist_ok=True)
-    print(f"=== run {args.variant} | {len(items)} items | model={config.LLM_MODEL} "
+    partial_path = out_dir / "results_partial.jsonl"
+    done: dict = {}
+    if partial_path.exists():
+        for line in partial_path.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                rec = json.loads(line)
+                done[rec["id"]] = rec
+        print(f"[resume] 载入 {len(done)} 条已完成记录", flush=True)
+    pending = [it for it in items if it["id"] not in done]
+    print(f"=== run {args.variant} | 待跑 {len(pending)}/{len(items)} | model={config.LLM_MODEL} "
           f"| mode={config.DEFAULT_RETRIEVAL_MODE} | reranker={config.ENABLE_RERANKER} "
           f"| critique={config.ENABLE_CRITIQUE} ===", flush=True)
 
-    results = []
-    for i, it in enumerate(items, 1):
+    for i, it in enumerate(pending, 1):
+        # 每题独立会话：共享 thread 会让上一题的澄清状态（pendingQuery/clarifications）
+        # 污染下一题，导致连续澄清中断、全部跳过检索
+        rs.thread_id = f"eval-{args.variant}-{it['id']}"
         collector = start_trace(rs, it["question"])
         cfg = rs.get_config()
         usage = TokenUsageHandler()
@@ -269,23 +287,34 @@ def main():
             "mrr": rmet["mrr"], "recall_candidates": rmet["recall_candidates"],
             "recall_final": rmet["recall_final"], "rerank_gain": rmet["rerank_gain"],
             "latency_ms": latency_ms,
+            "latency_by_layer": (trace_payload.get("summary", {}).get("latency_ms", {}).get("by_layer")
+                                 if trace_payload else {}),
             "token_usage": {"calls": usage.calls, "prompt_tokens": usage.prompt_tokens,
                             "completion_tokens": usage.completion_tokens},
             "critique_action": crit_action,
             "failure_attribution": attribution,
+            "contexts": contexts,
             "trace_path": str(trace_path) if trace_path else None,
             "outcome": outcome, "error": str(error) if error else None,
         }
-        results.append(rec)
+        with open(partial_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+        done[it["id"]] = rec
         flags = (f"intent={'✓' if intent_match else '✗ ' + str(intent)}"
                  f" | veto={'✗' if veto_triggered else '—'}"
                  f" | MRR={rmet['mrr']}"
                  f" | 归因={attribution or '—'}"
                  f" | {latency_ms}ms | tokens={usage.prompt_tokens}+{usage.completion_tokens}")
-        print(f"[{i}/{len(items)}] {it['id']} {flags}", flush=True)
+        print(f"[{i}/{len(pending)}] {it['id']} {flags}", flush=True)
+
+    results = [done[it["id"]] for it in items if it["id"] in done]
 
     passed = sum(1 for r in results if r["intent_match"] and not r["veto_triggered"]
                  and (r["refusal_detected"] if r["expected_behavior"] == "refusal" else True))
+    layer_ms_total: dict = {}
+    for r in results:
+        for layer, ms in (r.get("latency_by_layer") or {}).items():
+            layer_ms_total[layer] = layer_ms_total.get(layer, 0) + ms
     by_type = defaultdict(list)
     for r in results:
         by_type[r["query_type"]].append(r)
@@ -300,6 +329,7 @@ def main():
             "veto_rate": round(statistics.mean([1 if r["veto_triggered"] else 0 for r in results]) * 100, 1) if results else 0,
             "mean_mrr": round(statistics.mean([r["mrr"] for r in results]), 3) if results else 0,
             "mean_latency_ms": round(statistics.mean([r["latency_ms"] for r in results])) if results else 0,
+            "latency_ms": {"total": sum(r["latency_ms"] for r in results), "by_layer": {k: round(v) for k, v in layer_ms_total.items()}},
             "token_usage_total": {k: sum(r["token_usage"][k] for r in results)
                                   for k in ("calls", "prompt_tokens", "completion_tokens")},
             "failure_attribution": dict(Counter(r["failure_attribution"] for r in results

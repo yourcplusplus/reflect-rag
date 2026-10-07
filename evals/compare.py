@@ -8,6 +8,8 @@ Usage:
 import argparse
 import json
 import statistics
+import sys
+from datetime import datetime
 from pathlib import Path
 
 from scipy import stats
@@ -61,13 +63,13 @@ def collect(payload):
         refusal_ok = None
         if r["expected_behavior"] == "refusal":
             refusal_ok = bool(r["refusal_detected"] and veto_free)
-        rows[r["id"]] = {**r, "veto_free": veto_free, "refusal_ok": refusal_ok,
+        rows[r["id"]] = {**r, "veto_free": veto_free, "refusal_correct": refusal_ok,
                          "pass": r["intent_match"] and veto_free
                          and (refusal_ok if refusal_ok is not None else True)}
     binary = {
         "intent_match": {k for k, v in rows.items() if v["intent_match"]},
         "veto_free": {k for k, v in rows.items() if v["veto_free"]},
-        "refusal_correct": {k for k, v in rows.items() if v["refusal_ok"]},
+        "refusal_correct": {k for k, v in rows.items() if v["refusal_correct"]},
         "pass": {k for k, v in rows.items() if v["pass"]},
     }
     return rows, binary
@@ -82,10 +84,25 @@ def main():
     runs_dir = Path(args.runs_dir)
 
     variants = {}
-    for d in sorted(runs_dir.glob("*/results.json")):
+    for d in sorted(runs_dir.glob("*/*/results.json")):
         payload = json.loads(d.read_text(encoding="utf-8"))
         v = payload.get("variant")
-        if v and (v not in variants or d.name > variants[v][1].name):
+        # 旧版 summary 无 latency_ms 时从逐题 trace 回填（保持已跑数据可用）
+        if "latency_ms" not in payload.get("summary", {}):
+            by_layer, total = {}, 0
+            for r in payload.get("results", []):
+                total += r.get("latency_ms", 0)
+                tp = r.get("trace_path")
+                if not tp or not Path(tp).exists():
+                    continue
+                try:
+                    bl = json.loads(Path(tp).read_text(encoding="utf-8")).get("summary", {}).get("latency_ms", {}).get("by_layer", {})
+                except Exception:
+                    bl = {}
+                for layer, ms in bl.items():
+                    by_layer[layer] = by_layer.get(layer, 0) + ms
+            payload["summary"]["latency_ms"] = {"total": total, "by_layer": by_layer}
+        if v and (v not in variants or d.parent.name > variants[v][1].parent.name):
             variants[v] = (payload, d)
     if not variants:
         print("runs/ 下没有 results.json")
@@ -126,7 +143,7 @@ def main():
         lines.append(f"### {label}\n")
         lines.append("| variant | ALL | single_paper_factual | cross_paper_comparison | cross_paper_multi_hop | term_ambiguity | unanswerable |")
         lines.append("|---|---|---|---|---|---|---|")
-        for v, (rows, binary) in sorted(rows_by_variant.items()):
+        for v, binary in sorted(bin_by_variant.items()):
             cells = []
             for scope in ("ALL", "single_paper_factual", "cross_paper_comparison",
                           "cross_paper_multi_hop", "term_ambiguity", "unanswerable"):
