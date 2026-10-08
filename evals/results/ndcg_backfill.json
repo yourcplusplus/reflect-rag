@@ -1,0 +1,300 @@
+{
+ "group_A": [
+  {
+   "id": "spf-001",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-002",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-003",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-004",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-005",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-006",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-007",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-008",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-009",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-010",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-011",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-012",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-013",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-014",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-015",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-016",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-017",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-018",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-020",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-021",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-022",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-023",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-024",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "spf-025",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "cpc-001",
+   "query_type": "cross_paper_comparison",
+   "ndcg@5": 0.6131,
+   "ndcg@10": 0.6131
+  },
+  {
+   "id": "cpc-002",
+   "query_type": "cross_paper_comparison",
+   "ndcg@5": 0.9197,
+   "ndcg@10": 0.9197
+  },
+  {
+   "id": "cpc-003",
+   "query_type": "cross_paper_comparison",
+   "ndcg@5": 0.6131,
+   "ndcg@10": 0.6131
+  },
+  {
+   "id": "cpc-004",
+   "query_type": "cross_paper_comparison",
+   "ndcg@5": 0.6131,
+   "ndcg@10": 0.6131
+  },
+  {
+   "id": "cpc-005",
+   "query_type": "cross_paper_comparison",
+   "ndcg@5": 0.6131,
+   "ndcg@10": 0.6131
+  }
+ ],
+ "group_B": [
+  {
+   "id": "nspf-001",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "nspf-002",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "nspf-003",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "nspf-004",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "nspf-005",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "nspf-006",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "nspf-007",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "nspf-008",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "nspf-009",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "nspf-010",
+   "query_type": "single_paper_factual",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "ncpc-001",
+   "query_type": "cross_paper_comparison",
+   "ndcg@5": 0.6131,
+   "ndcg@10": 0.6131
+  },
+  {
+   "id": "ncpc-002",
+   "query_type": "cross_paper_comparison",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "ncpc-003",
+   "query_type": "cross_paper_comparison",
+   "ndcg@5": 0.6131,
+   "ndcg@10": 0.6131
+  },
+  {
+   "id": "ncpc-004",
+   "query_type": "cross_paper_comparison",
+   "ndcg@5": 0.6131,
+   "ndcg@10": 0.6131
+  },
+  {
+   "id": "ncpc-005",
+   "query_type": "cross_paper_comparison",
+   "ndcg@5": 0.6131,
+   "ndcg@10": 0.6131
+  },
+  {
+   "id": "ncpm-001",
+   "query_type": "cross_paper_multi_hop",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "ncpm-002",
+   "query_type": "cross_paper_multi_hop",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  },
+  {
+   "id": "ncpm-003",
+   "query_type": "cross_paper_multi_hop",
+   "ndcg@5": 0.6131,
+   "ndcg@10": 0.6131
+  },
+  {
+   "id": "ncpm-004",
+   "query_type": "cross_paper_multi_hop",
+   "ndcg@5": 0.6131,
+   "ndcg@10": 0.6131
+  },
+  {
+   "id": "ncpm-005",
+   "query_type": "cross_paper_multi_hop",
+   "ndcg@5": 1.0,
+   "ndcg@10": 1.0
+  }
+ ]
+}

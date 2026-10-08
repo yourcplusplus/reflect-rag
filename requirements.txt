@@ -1,10 +1,12 @@
+# langchain-ollama: only needed by the legacy walkthrough notebook
+# (notebooks/agentic_rag.ipynb). The app and the evaluation pipeline use
+# DeepSeek and do not import it — install separately if you run that notebook.
 fastembed==0.8.1
 FlagEmbedding==1.4.2
 gradio==6.29.0
 ipykernel==7.4.0
 langchain-deepseek==1.1.1
 langchain-huggingface==1.2.2
-langchain-ollama==1.1.0
 langchain-qdrant==1.1.0
 langchain-text-splitters==1.1.2
 langfuse==4.16.0
