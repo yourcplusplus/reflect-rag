@@ -34,6 +34,7 @@ from langchain_core.runnables import RunnableConfig
 from langchain_deepseek import ChatDeepSeek
 from pydantic import BaseModel, Field
 from core.rag_system import RAGSystem
+from metrics import ndcg_at_k
 from core.trace import start_trace, finish_trace, build_profile
 
 RUNS_DIR = ROOT / "evals" / "results" / "runs"
@@ -141,10 +142,15 @@ def _norm_source(s: str) -> str:
 def retrieval_metrics(trace_payload: dict, source_papers: set) -> dict:
     source_papers = {_norm_source(s) for s in source_papers}
     rounds, pre_posts, point_source = [], [], {}
+    ndcgs5, ndcgs10 = [], []
     for e in trace_payload.get("events", []):
         if e["event"] == "candidates":
-            srcs = [_norm_source(c.get("source", "")) for c in e["data"].get("candidates", [])]
+            cands = e["data"].get("candidates", [])
+            srcs = [_norm_source(c.get("source", "")) for c in cands]
             rounds.append([i + 1 for i, s in enumerate(srcs) if s in source_papers])
+            if source_papers:
+                ndcgs5.append(ndcg_at_k(cands, source_papers, k=5))
+                ndcgs10.append(ndcg_at_k(cands, source_papers, k=10))
             for c in e["data"].get("candidates", []):
                 point_source[c["point_id"]] = _norm_source(c.get("source", ""))
         elif e["event"] == "reranked":
@@ -162,7 +168,9 @@ def retrieval_metrics(trace_payload: dict, source_papers: set) -> dict:
     rerank_gain = (round(statistics.mean(gold_pre) - statistics.mean(gold_post), 3)
                    if gold_pre and gold_post else None)
     return {"mrr": mrr, "recall_candidates": recall_candidates, "recall_final": recall_final,
-            "gold_rank_pre": gold_pre, "gold_rank_post": gold_post, "rerank_gain": rerank_gain}
+            "gold_rank_pre": gold_pre, "gold_rank_post": gold_post, "rerank_gain": rerank_gain,
+            "ndcg@5": round(max(ndcgs5), 4) if ndcgs5 else None,
+            "ndcg@10": round(max(ndcgs10), 4) if ndcgs10 else None}
 
 
 def attribute_failure(res: dict, critique_enabled: bool) -> str | None:
@@ -317,6 +325,7 @@ def main():
             "hallucination_strict": hallu_strict, "hallucination_user": hallu_user,
             "mrr": rmet["mrr"], "recall_candidates": rmet["recall_candidates"],
             "recall_final": rmet["recall_final"], "rerank_gain": rmet["rerank_gain"],
+            "ndcg@5": rmet["ndcg@5"], "ndcg@10": rmet["ndcg@10"],
             "latency_ms": latency_ms,
             "latency_by_layer": (trace_payload.get("summary", {}).get("latency_ms", {}).get("by_layer")
                                  if trace_payload else {}),
@@ -362,6 +371,8 @@ def main():
             "no_hallucination_strict": round((1 - statistics.mean([1 if r["hallucination_strict"] else 0 for r in results])) * 100, 1) if results else 0,
             "no_hallucination_user": round((1 - statistics.mean([1 if r["hallucination_user"] else 0 for r in results])) * 100, 1) if results else 0,
             "mean_mrr": round(statistics.mean([r["mrr"] for r in results]), 3) if results else 0,
+            "mean_ndcg@5": round(statistics.mean([r["ndcg@5"] for r in results if r.get("ndcg@5") is not None]), 4) if any(r.get("ndcg@5") is not None for r in results) else None,
+            "mean_ndcg@10": round(statistics.mean([r["ndcg@10"] for r in results if r.get("ndcg@10") is not None]), 4) if any(r.get("ndcg@10") is not None for r in results) else None,
             "mean_latency_ms": round(statistics.mean([r["latency_ms"] for r in results])) if results else 0,
             "latency_ms": {"total": sum(r["latency_ms"] for r in results), "by_layer": {k: round(v) for k, v in layer_ms_total.items()}},
             "token_usage_total": {k: sum(r["token_usage"][k] for r in results)
