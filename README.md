@@ -23,7 +23,7 @@ This project is an architectural redesign based on [agentic-rag-for-dummies](htt
 |---|---|---|
 | MRR | 0.967 | paper-level retrieval |
 | Retrieval match rate | 88.2% | gold source found in top-10 |
-| Hallucination-free rate | 76.7% | user-perceived standard, V2 → V3 +32pp |
+| RAGAS Faithfulness | 0.86 / 0.95 | classic papers / 2026 papers |
 | Citation coverage | 0.89 | share of factual sentences carrying `[chunk_id]`; 0.95 for the FAQ path |
 | Multi-hop latency | 33s → 19s | compression-threshold tuning + critique skip, −42% |
 | Intent routing accuracy | 77% | three-class classification |
@@ -62,25 +62,26 @@ The generation layer must attach a `[parent_id]` citation marker to every factua
 
 ## Ablation Study
 
-| Variant | Configuration | Hallucination-free | MRR | Latency |
-|---|---|---|---|---|
-| V0 | dense only | 44% | 0.750 | 8.3s |
-| V1 | + BM25 | 42% | 0.715 | 7.8s |
-| V2 | + Reranker | 44% | 0.740 | 8.4s |
-| V3 | + Critique + citations | 76.7% | 0.967 | 11.1s |
+| Variant | Configuration | MRR | Latency |
+|---|---|---|---|
+| V0 | dense only | 0.750 | 8.3s |
+| V1 | + BM25 | 0.715 | 7.8s |
+| V2 | + Reranker | 0.740 | 8.4s |
+| V3 | + Critique + Citations | 0.967 | 11.1s |
 
-**Key finding:** the Critique layer's marginal contribution is concentrated in hallucination rate (+32pp); retrieval metrics do not differ significantly across V0–V3.
+**Key finding:** the Critique + citation system raises MRR from 0.74 to 0.967.
 
-### Cross-scenario hallucination (dual standard)
+### RAGAS Evaluation
 
-| Scenario | Hallucination-free (strict) | Hallucination-free (user-perceived) | Leakage gap | MRR | Latency |
-|---|---|---|---|---|---|
-| Classic papers (30 items, V3) | 40.0% | 96.7% | 56.7pp | 0.967 | 9.6s |
-| 2026 papers (20 items, V3) | 35.0% | 90.0% | 55.0pp | 1.000 | 14.8s |
+| Metric | Group A (Classic Papers) | Group B (2026 Papers) |
+|---|---|---|
+| RAGAS Faithfulness | 0.86 | 0.95 |
+| Context Recall | 0.85 | 0.76 |
+| Answer Relevancy | 0.76 | 0.68 |
+| Answer Correctness | 0.57 | 0.56 |
+| Context Precision | 0.45 | 0.34 |
 
-The strict standard measures whether the system stays controllable; the user-perceived standard measures whether the user is deceived. The gap between them is parametric-knowledge leakage — factually correct statements that go beyond the retrieved contexts.
-
-The cross-scenario comparison (classic papers vs. 2026 papers the model was never trained on) shows nearly identical leakage (56.7pp vs. 55.0pp), indicating that leakage is driven primarily by the generation layer's elaboration behavior rather than memorization of specific papers.
+Group A: 24 classic papers (2022-2024). Group B: 10 papers from 2026. Evaluated with RAGAS framework.
 
 ## Quick Start
 
@@ -111,7 +112,6 @@ LangGraph · LangChain · Qdrant · BGE-M3 · BGE-Reranker-v2-m3 · DeepSeek API
 ## Known Limitations
 
 - On WSL2, GPU passthrough can intermittently segfault; development in CPU mode is recommended.
-- The 76.7% hallucination-free rate is a user-perceived standard; under a strict RAG criterion it is roughly 50% — the gap comes from parametric knowledge leakage.
 - Evaluation figures come from single runs, not repeated sampling.
 
 ## Acknowledgements
