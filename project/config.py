@@ -37,6 +37,10 @@ SOURCE_FILTER_ENABLED = os.environ.get("SOURCE_FILTER_ENABLED", "false").lower()
 SOURCE_FILTER_MIN_SCORE = float(os.environ.get("SOURCE_FILTER_MIN_SCORE", "0.0"))
 SOURCE_FILTER_MAX_PER_PARENT = int(os.environ.get("SOURCE_FILTER_MAX_PER_PARENT", "2"))
 
+# --- Context Pool Convergence (second-stage rerank over accumulated contexts) ---
+CONTEXT_POOL_CONVERGENCE_ENABLED = os.environ.get("CONTEXT_POOL_CONVERGENCE_ENABLED", "true").lower() == "true"
+CONTEXT_POOL_TOP_K = int(os.environ.get("CONTEXT_POOL_TOP_K", "7"))
+
 # --- Agent Configuration ---
 MAX_TOOL_CALLS = 8
 MAX_ITERATIONS = 10

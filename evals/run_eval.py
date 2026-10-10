@@ -288,6 +288,14 @@ def main():
 
         contexts = extract_contexts(tool_messages)
         contexts_source = "tool_messages" if contexts else "none"
+        # 上下文池收敛启用时：优先使用 collect_answer 写入的收敛后证据集（final contexts）
+        if config.CONTEXT_POOL_CONVERGENCE_ENABLED:
+            collected = []
+            for ans in values.get("agent_answers", []):
+                collected += ans.get("contexts", [])
+            if collected:
+                contexts = list(dict.fromkeys(collected))
+                contexts_source = "converged_pool"
         if not contexts:
             # faq 路径没有 ToolMessage：从 trace candidates 的 preview 拼接上下文
             #（250 字符截断，但远好于让 veto 在零上下文下判定）

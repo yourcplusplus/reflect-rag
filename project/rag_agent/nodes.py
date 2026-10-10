@@ -11,8 +11,8 @@ from .prompts import *
 from utils import estimate_context_tokens
 from core.execution_logger import log_error
 from core.trace import collector_from_config
-from .tools import rerank_top1_for
-from config import BASE_TOKEN_THRESHOLD, CHILD_CHUNK_SEPARATOR, DEFAULT_RETRIEVAL_K, ENABLE_CRITIQUE, MAIN_HISTORY_MESSAGES_TO_KEEP, SKIPPED_TOOL_MESSAGE, TOKEN_GROWTH_FACTOR
+from .tools import get_shared_reranker, rerank_top1_for
+from config import BASE_TOKEN_THRESHOLD, CHILD_CHUNK_SEPARATOR, CONTEXT_POOL_CONVERGENCE_ENABLED, CONTEXT_POOL_TOP_K, DEFAULT_RETRIEVAL_K, ENABLE_CRITIQUE, MAIN_HISTORY_MESSAGES_TO_KEEP, SKIPPED_TOOL_MESSAGE, TOKEN_GROWTH_FACTOR
 
 if MAIN_HISTORY_MESSAGES_TO_KEEP < 2:
     raise ValueError("MAIN_HISTORY_MESSAGES_TO_KEEP must be at least 2.")
@@ -328,6 +328,62 @@ def compress_context(state: AgentState, llm, config: RunnableConfig = None):
 
     return {"context_summary": new_summary, "messages": [RemoveMessage(id=m.id) for m in messages[1:]]}
 
+_CTX_PARSE_RE = re.compile(r"Parent ID:\s*(.+?)\nFile Name:\s*(.+?)\nContent:\s*(.*)", re.DOTALL)
+
+
+def _converge_context_pool(contexts, question, collector=None):
+    """对累计 contexts 池做二次精排：rerank 重打分 → Parent 去重(每 parent 最高分 1 个) → top-k。
+
+    返回收敛后的 context 文本列表（保持原始 "Parent ID/File Name/Content" 格式）。
+    reranker 不可用或池为空时原样返回。
+    """
+    if not contexts:
+        return contexts
+    entries, seen = [], set()
+    for c in contexts:
+        m = _CTX_PARSE_RE.match(c)
+        pid = m.group(1).strip() if m else ""
+        content = m.group(3).strip() if m else c
+        key = (pid, content)
+        if key in seen:
+            continue
+        seen.add(key)
+        entries.append({"parent_id": pid, "content": content, "raw": c})
+    dropped_duplicate = len(contexts) - len(entries)
+
+    reranker = get_shared_reranker()
+    if reranker and question and entries:
+        try:
+            scores = reranker.compute_score([(question, e["content"]) for e in entries], batch_size=8)
+            if not isinstance(scores, list):
+                scores = [scores]
+            for e, s in zip(entries, scores):
+                e["score"] = float(s)
+            entries.sort(key=lambda e: e["score"], reverse=True)
+        except Exception as e:
+            log_error("pool_convergence/rerank", e)
+
+    seen_parents, kept = set(), []
+    for e in entries:
+        pid = e["parent_id"]
+        if pid and pid in seen_parents:
+            continue
+        if pid:
+            seen_parents.add(pid)
+        kept.append(e)
+    dropped_parent = len(entries) - len(kept)
+    truncated = max(0, len(kept) - CONTEXT_POOL_TOP_K)
+    kept = kept[:CONTEXT_POOL_TOP_K]
+
+    if collector:
+        collector.emit("retrieval", "pool_convergence", {
+            "before": len(contexts), "after": len(kept),
+            "dropped_duplicate": dropped_duplicate, "dropped_parent": dropped_parent,
+            "truncated": truncated,
+        })
+    return [e["raw"] for e in kept]
+
+
 def collect_answer(state: AgentState, config: RunnableConfig = None):
     last_message = state["messages"][-1]
     is_valid = isinstance(last_message, AIMessage) and last_message.content and not last_message.tool_calls
@@ -338,7 +394,11 @@ def collect_answer(state: AgentState, config: RunnableConfig = None):
             "index": state["question_index"],
             "question": state["question"],
             "answer": answer,
-            "contexts": state.get("retrieved_contexts", []),
+            "contexts": _converge_context_pool(
+                state.get("retrieved_contexts", []),
+                state.get("question", ""),
+                collector_from_config(config)) if CONTEXT_POOL_CONVERGENCE_ENABLED
+                else state.get("retrieved_contexts", []),
         }]
     }
 

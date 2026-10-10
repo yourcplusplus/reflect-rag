@@ -1,3 +1,4 @@
+import threading
 import time
 
 from FlagEmbedding import FlagReranker
@@ -12,6 +13,22 @@ from core.execution_logger import log_error, log_tool_end, log_tool_start
 _RERANK_TOP1_BY_THREAD: dict = {}
 
 
+_SHARED_RERANKER = None
+_SHARED_RERANKER_LOCK = threading.Lock()
+
+
+def get_shared_reranker():
+    """进程内共享的 BGE-Reranker 单例（search 工具与上下文池收敛共用，避免二次加载）。"""
+    global _SHARED_RERANKER
+    if not config.ENABLE_RERANKER:
+        return None
+    if _SHARED_RERANKER is None:
+        with _SHARED_RERANKER_LOCK:
+            if _SHARED_RERANKER is None:
+                _SHARED_RERANKER = FlagReranker(config.RERANKER_MODEL, use_fp16=True)
+    return _SHARED_RERANKER
+
+
 def rerank_top1_for(run_config) -> float | None:
     if not isinstance(run_config, dict):
         return None
@@ -24,7 +41,7 @@ class ToolFactory:
     def __init__(self, collection):
         self.collection = collection
         self.parent_store_manager = ParentStoreManager()
-        self.reranker = FlagReranker(config.RERANKER_MODEL, use_fp16=True) if config.ENABLE_RERANKER else None
+        self.reranker = get_shared_reranker()
 
     def _source_filter(self, entries, limit):
         """确定性源数据过滤（不调 LLM），三规则：
