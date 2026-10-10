@@ -26,7 +26,31 @@ class ToolFactory:
         self.parent_store_manager = ParentStoreManager()
         self.reranker = FlagReranker(config.RERANKER_MODEL, use_fp16=True) if config.ENABLE_RERANKER else None
 
-    def _rerank(self, query, scored_docs, run_config: RunnableConfig = None):
+    def _source_filter(self, entries, limit):
+        """确定性源数据过滤（不调 LLM），三规则：
+        1) rerank 分数低于阈值的丢弃
+        2) 同一 parent 最多保留 SOURCE_FILTER_MAX_PER_PARENT 个 child
+        3) 超出 limit 的按分数截断
+        entries 已按 rerank 分数降序；返回 (kept, stats)。"""
+        kept, per_parent = [], {}
+        dropped_low_score = dropped_parent_cap = 0
+        for e in entries:
+            if e["rerank_score"] < config.SOURCE_FILTER_MIN_SCORE:
+                dropped_low_score += 1
+                continue
+            pid = e.get("parent_id", "")
+            if per_parent.get(pid, 0) >= config.SOURCE_FILTER_MAX_PER_PARENT:
+                dropped_parent_cap += 1
+                continue
+            per_parent[pid] = per_parent.get(pid, 0) + 1
+            kept.append(e)
+        truncated = max(0, len(kept) - limit)
+        stats = {"input": len(entries), "output": min(len(kept), limit),
+                 "dropped_low_score": dropped_low_score,
+                 "dropped_parent_cap": dropped_parent_cap, "truncated": truncated}
+        return kept[:limit], stats
+
+    def _rerank(self, query, scored_docs, limit=None, run_config: RunnableConfig = None):
         """Return docs ordered by reranker score (descending).
 
         Emits the retrieval candidates (vector order + fused scores) and the
@@ -73,6 +97,9 @@ class ToolFactory:
             return [entry["doc"] for entry in entries]
 
         ordered = sorted(entries, key=lambda entry: entry["rerank_score"], reverse=True)
+        filter_stats = None
+        if config.SOURCE_FILTER_ENABLED and limit:
+            ordered, filter_stats = self._source_filter(ordered, limit)
         if ordered and isinstance(run_config, dict):
             tid = (run_config.get("configurable") or {}).get("thread_id")
             if tid:
@@ -86,6 +113,7 @@ class ToolFactory:
                 "rerank_scores": {entry["point_id"]: entry["rerank_score"] for entry in ordered},
                 "moved_up": [pid for i, pid in enumerate(post_rank) if pre_index[pid] > i],
                 "latency_ms": round(latency_ms),
+                "source_filter": filter_stats or {"enabled": False},
             })
         return [entry["doc"] for entry in ordered]
 
@@ -119,7 +147,7 @@ class ToolFactory:
                 log_tool_end("search_child_chunks", output)
                 return output
 
-            results = self._rerank(query, scored_docs, run_config=run_config)[:limit]
+            results = self._rerank(query, scored_docs, limit=limit, run_config=run_config)
 
             output = config.CHILD_CHUNK_SEPARATOR.join([
                 f"Parent ID: {doc.metadata.get('parent_id', '')}\n"

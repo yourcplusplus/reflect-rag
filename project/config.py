@@ -30,6 +30,13 @@ RERANKER_TOP_K_MULTIPLIER = 2
 ENABLE_RERANKER = os.environ.get("ENABLE_RERANKER", "true").lower() == "true"
 CHILD_CHUNK_SEPARATOR = "\n\n<CHILD_CHUNK_BOUNDARY>\n\n"
 
+# --- Contextual Retrieval & Source Filtering ---
+CONTEXTUAL_RETRIEVAL_ENABLED = os.environ.get("CONTEXTUAL_RETRIEVAL_ENABLED", "true").lower() == "true"
+CONTEXTUAL_COLLECTION = "document_child_chunks_ctx"
+SOURCE_FILTER_ENABLED = os.environ.get("SOURCE_FILTER_ENABLED", "true").lower() == "true"
+SOURCE_FILTER_MIN_SCORE = float(os.environ.get("SOURCE_FILTER_MIN_SCORE", "0.0"))
+SOURCE_FILTER_MAX_PER_PARENT = int(os.environ.get("SOURCE_FILTER_MAX_PER_PARENT", "2"))
+
 # --- Agent Configuration ---
 MAX_TOOL_CALLS = 8
 MAX_ITERATIONS = 10

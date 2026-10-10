@@ -23,6 +23,15 @@ class RAGSystem:
 
     def initialize(self):
         self.vector_db.create_collection(self.collection_name)
+        # Contextual Retrieval：优先使用增强索引 collection；缺失/为空时回退
+        if config.CONTEXTUAL_RETRIEVAL_ENABLED:
+            ctx = config.CONTEXTUAL_COLLECTION
+            if self.vector_db.collection_exists(ctx) and self.vector_db.point_count(ctx) > 0:
+                self.collection_name = ctx
+                print(f"✓ Using contextual-retrieval collection: {ctx}")
+            else:
+                print(f"⚠️  CONTEXTUAL_RETRIEVAL_ENABLED but '{ctx}' is missing/empty — "
+                      f"falling back to '{self.collection_name}'")
         collection = self.vector_db.get_collection(self.collection_name)
         dense_collection = self.vector_db.get_dense_collection(self.collection_name)
 

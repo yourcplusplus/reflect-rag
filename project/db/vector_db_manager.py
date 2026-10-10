@@ -90,6 +90,18 @@ class VectorDbManager:
         except Exception as e:
             raise RuntimeError(f"Unable to initialize Qdrant collection '{collection_name}'.") from e
 
+    def collection_exists(self, collection_name) -> bool:
+        try:
+            return bool(self.__client.collection_exists(collection_name))
+        except Exception:
+            return False
+
+    def point_count(self, collection_name) -> int:
+        try:
+            return int(self.__client.get_collection(collection_name).points_count or 0)
+        except Exception:
+            return 0
+
     def get_dense_collection(self, collection_name):
         """Pure-vector view: no BM25 sparse signals. The reranker is not
         part of the store at all (it lives in the search tool), so a dense
