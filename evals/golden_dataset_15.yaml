@@ -1,0 +1,545 @@
+version: 1
+created_at: '2026-10-06T20:09:46'
+generator: scripts/generate_golden_dataset.py (draft + LLM verify, 人工审核后冻结)
+counts:
+  single_paper_factual: 8
+  cross_paper_comparison: 4
+  cross_paper_multi_hop: 3
+items:
+- _key:
+  - cross_paper_comparison
+  - '2404.16130'
+  - '2401.18059'
+  question: Both GraphRAG and RAPTOR aim to improve retrieval-augmented generation beyond flat chunk retrieval.
+    How do their underlying indexing structures and retrieval mechanisms differ, and what different kinds of queries
+    does each target?
+  ground_truth: 'GraphRAG builds an explicit knowledge graph from the source documents, extracting entities and
+    relationships and then partitioning the graph into hierarchical communities, each summarized into community
+    reports; at query time it uses these pre-generated community summaries (with a map-reduce style aggregation)
+    to answer global, query-focused summarization questions about an entire corpus. RAPTOR instead constructs a
+    recursive tree of clusters: it embeds and clusters text chunks, then recursively summarizes and re-embeds those
+    clusters to build higher-level nodes, so retrieval can traverse the tree at multiple abstraction levels. Thus
+    GraphRAG''s structure is graph- and community-based, oriented toward sensemaking over a whole corpus, whereas
+    RAPTOR''s structure is a hierarchical clustering tree oriented toward retrieving context at the right granularity
+    for a query. The key contrast is that GraphRAG emphasizes global, corpus-level summarization via community summaries,
+    while RAPTOR emphasizes multi-scale retrieval by recursively abstracting clusters of text.'
+  gold_evidence:
+  - 'GraphRAG uses a large language model (LLM) to build a graph index in two stages: first, an LLM derives an entity
+    knowledge graph from the source documents; second, pre-generated community summaries are used to answer questions.
+    Community detection partitions the graph into a hierarchy of communities, and community summaries are generated
+    for each. Given a question, each community summary is used to generate a partial response, and these partial
+    responses are aggregated into a final global answer.'
+  - RAPTOR recursively clusters and summarizes text chunks to build a tree, where nodes closer to the root contain
+    more abstract summaries and nodes closer to the leaves contain more detailed text. Retrieval can then traverse
+    this tree, allowing the model to access information at different levels of abstraction. RAPTOR constructs the
+    tree by clustering the embeddings of text chunks, summarizing each cluster, and then recursively embedding,
+    clustering, and summarizing the resulting summaries.
+  provenance: llm_synthesized
+  source_papers:
+  - '2404.16130'
+  - '2401.18059'
+  source_sections:
+  - 2404.16130#(front matter)
+  - 2401.18059#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+  verification:
+    supported: true
+    reason: 证据明确描述了GraphRAG的实体知识图谱构建、社区划分与社区摘要及map-reduce式聚合回答全局问题，以及RAPTOR的递归聚类摘要树与多抽象层级检索，足以支撑该对比性ground truth。
+  query_type: cross_paper_comparison
+  id: cpc-001
+  review_status: approved
+  notes: ''
+- _key:
+  - cross_paper_comparison
+  - '2210.03629'
+  - '2307.16789'
+  question: Both ReAct and ToolLLaMA aim to make LLMs better at using external tools/APIs, but they address the
+    problem from different angles. How do the two works differ in their core approach and in what they identify
+    as the key limitation of existing LLMs?
+  ground_truth: 'ReAct takes a prompting-based approach: it synergizes reasoning and acting in language models by
+    letting the model generate interleaved reasoning traces and task-specific actions, so that reasoning guides
+    action and actions gather observations for further reasoning. ToolLLaMA, by contrast, frames the problem as
+    tool learning and builds a full data-construction-and-training pipeline (API collection, instruction generation,
+    solution-path annotation, an API retriever, SFT, and ToolEval) to teach LLMs to interact with real APIs. Their
+    diagnoses of the limitation also differ: ReAct targets the gap between pure reasoning and pure acting, whereas
+    ToolLLaMA argues that open-source LLMs lack tool-use sophistication because current instruction tuning focuses
+    on basic language tasks and relatively neglects the tool-use domain. Thus ReAct improves tool use through inference-time
+    prompting, while ToolLLaMA improves it through curated tool-use data and supervised fine-tuning.'
+  gold_evidence:
+  - 'REACT: SYNERGIZING REASONING AND ACTING IN LANGUAGE MODELS'
+  - Although open-source LLMs, e.g., LLaMA (Touvron et al., 2023a), have achieved versatile capabilities through
+    instruction tuning (Taori et al., 2023; Chiang et al., 2023), they still lack the sophistication in performing
+    higher-level tasks, such as appropriately interacting with tools (APIs) to fulfill complex human instruction.
+    This deficiency is because current instruction tuning largely focuses on basic language tasks, with a relative
+    neglect of the tool-use domain.
+  provenance: llm_synthesized
+  source_papers:
+  - '2210.03629'
+  - '2307.16789'
+  source_sections:
+  - 2210.03629#(front matter)
+  - 2307.16789#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+  verification:
+    supported: false
+    reason: The evidence only contains a ReAct excerpt and a ToolLLaMA-related sentence about open-source LLMs lacking
+      tool-use sophistication due to instruction tuning focusing on basic tasks; it provides no support for the
+      claimed ReAct prompting details (interleaved reasoning/action traces) or ToolLLaMA's full pipeline (API collection,
+      instruction generation, annotation, retriever, SFT, ToolEval), so the ground truth is not fully supported.
+  query_type: cross_paper_comparison
+  id: cpc-002
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - cross_paper_comparison
+  - '2310.11511'
+  - '2210.03629'
+  question: Both SELF-RAG and ReAct interleave reasoning with retrieval/acting, but how do their mechanisms for
+    deciding when to retrieve or act differ, and what distinct capabilities does each approach claim as a result?
+  ground_truth: SELF-RAG trains an LM to adaptively retrieve passages on demand and to generate self-reflection
+    tokens that critique its own output, using special tokens such as "Retrieve" and "Critique" to control retrieval
+    and assess relevance, support, and usefulness. ReAct instead prompts an LLM to interleave verbal reasoning traces
+    with task-specific actions in an alternating manner, where the reasoning traces help the model induce, track,
+    and update action plans while handling exceptions. Thus SELF-RAG's control is learned and internalized through
+    training with reflection tokens, whereas ReAct's is elicited through prompting that produces thought-action-observation
+    trajectories. As a result, SELF-RAG claims improved factuality and citation accuracy on tasks like open-domain
+    QA and long-form generation, while ReAct claims improved synergies between reasoning and acting that reduce
+    hallucination and error propagation on knowledge-intensive and interactive decision-making benchmarks.
+  gold_evidence:
+  - We introduce Self-RAG, a framework to enhance an LM's generation quality and factuality through retrieval and
+    self-reflection. Self-RAG trains an arbitrary LM to adaptively retrieve passages on-demand and generate and
+    reflect on retrieved passages and its own generations using special tokens, called reflection tokens. Generating
+    reflection tokens makes the LM controllable during the inference phase, enabling it to tailor its behavior to
+    diverse task requirements.
+  - We explore the use of LLMs to synergize reasoning and acting in an interleaved manner to solve diverse language
+    reasoning and decision making tasks. ReAct prompts LLMs to generate both verbal reasoning traces and actions
+    pertaining to a task in an interleaved manner, which allows the model to perform dynamic reasoning to create,
+    maintain, and adjust high-level plans for acting (reason to act), while also interact with the external environments
+    (e.g., Wikipedia) to incorporate additional information into reasoning (acting to reason).
+  provenance: llm_synthesized
+  source_papers:
+  - '2310.11511'
+  - '2210.03629'
+  source_sections:
+  - 2310.11511#(front matter)
+  - 2210.03629#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+  verification:
+    supported: false
+    reason: The evidence mentions reflection tokens and adaptive retrieval generally, but does not name specific
+      tokens like "Retrieve" and "Critique", nor does it mention citation accuracy, open-domain QA, long-form generation,
+      hallucination reduction, or specific benchmarks claimed by either approach.
+  query_type: cross_paper_comparison
+  id: cpc-003
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - cross_paper_comparison
+  - '2303.17651'
+  - '2310.11511'
+  question: Both SELF-REFINE and SELF-RAG use self-generated signals to improve LLM outputs, but how do their mechanisms
+    and training requirements differ?
+  ground_truth: SELF-REFINE improves an LLM's initial output by having the same LLM generate feedback on its own
+    output and then refine itself iteratively, requiring no supervised training data, additional training, or reinforcement
+    learning—a single LLM acts as generator, refiner, and feedback provider. SELF-RAG, by contrast, is framed as
+    a learning-based approach that trains the model to retrieve, generate, and critique through self-reflection,
+    meaning it does rely on training rather than being a purely test-time, standalone method. Thus while SELF-REFINE
+    is a training-free iterative refinement loop applied at test time across tasks like dialog and math reasoning,
+    SELF-RAG incorporates retrieval and learned self-critique into the model itself. Both share the core idea of
+    using self-feedback/self-reflection, but SELF-REFINE operates without any training while SELF-RAG is explicitly
+    about learning to do so.
+  gold_evidence:
+  - SELF-REFINE does not require any supervised training data, additional training, or reinforcement learning, and
+    instead uses a single LLM as the generator, refiner and the feedback provider.
+  - 'SELF-RAG: LEARNING TO RETRIEVE, GENERATE, AND CRITIQUE THROUGH SELF-REFLECTION'
+  provenance: llm_synthesized
+  source_papers:
+  - '2303.17651'
+  - '2310.11511'
+  source_sections:
+  - 2303.17651#(front matter)
+  - 2310.11511#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+  verification:
+    supported: false
+    reason: The evidence only states SELF-REFINE is training-free and gives SELF-RAG's title, but does not confirm
+      SELF-RAG actually trains the model or that it incorporates retrieval/learned self-critique, nor does it mention
+      iterative refinement across dialog and math reasoning tasks.
+  query_type: cross_paper_comparison
+  id: cpc-004
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - cross_paper_multi_hop
+  - '2208.03299'
+  - '2307.16789'
+  question: Atlas showed that a retrieval-augmented model with far fewer parameters can match or beat a much larger
+    knowledge-storing LLM in few-shot knowledge-intensive tasks. Given that finding, what gap does the ToolLLaMA
+    paper (Paper B) identify in current instruction tuning, and how does its proposed solution relate to the kind
+    of capability Atlas demonstrated?
+  ground_truth: Atlas demonstrated that retrieval augmentation lets a smaller model (11B) outperform a 540B-parameter
+    model on knowledge-intensive few-shot tasks like Natural Questions, showing that external retrieval can substitute
+    for massive parameterized knowledge. Paper B argues that open-source LLMs, despite instruction tuning, still
+    lack sophistication in higher-level tasks such as interacting with tools/APIs, because current instruction tuning
+    focuses on basic language tasks and neglects the tool-use domain. ToolLLaMA addresses this by constructing API
+    instructions and solution paths and training with an API retriever, extending the retrieval-augmented paradigm
+    Atlas validated from knowledge retrieval to tool/API retrieval and use. Thus Atlas's conclusion that retrieval
+    augmentation can compensate for model scale supports Paper B's premise that a smaller open-source LLM can be
+    empowered to handle complex tool-use tasks via retrieval and targeted instruction tuning.
+  gold_evidence:
+  - Notably, Atlas reaches over 42% accuracy on Natural Questions using only 64 examples, outperforming a 540B parameters
+    model by 3% despite having 50x fewer parameters.
+  - Although open-source LLMs, e.g., LLaMA, have achieved versatile capabilities through instruction tuning, they
+    still lack the sophistication in performing higher-level tasks, such as appropriately interacting with tools
+    (APIs) to fulfill complex human instruction. This deficiency is because current instruction tuning largely focuses
+    on basic language tasks, with a relative neglect of the tool-use domain.
+  provenance: llm_synthesized
+  source_papers:
+  - '2208.03299'
+  - '2307.16789'
+  source_sections:
+  - 2208.03299#(front matter)
+  - 2307.16789#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+    reasoning_bridge: Atlas's conclusion that retrieval augmentation lets a small model match a 50x-larger model
+      on knowledge-intensive tasks establishes the retrieval-augmentation paradigm that Paper B extends to the tool-use
+      domain, where it argues open-source LLMs fail due to instruction tuning neglecting tool/API interaction.
+  verification:
+    supported: false
+    reason: The evidence supports Atlas's retrieval-augmentation finding and Paper B's identified gap, but it does
+      not mention ToolLLaMA's proposed solution (API instructions, solution paths, API retriever) or the claim that
+      Atlas's conclusion supports Paper B's premise, so those ground-truth facts are unsupported.
+  query_type: cross_paper_multi_hop
+  id: cpm-001
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - cross_paper_multi_hop
+  - '2004.12832'
+  - '2212.10496'
+  question: ColBERT achieves strong passage ranking through contextualized late interaction over BERT, but its design
+    assumes a supervised setting with labeled relevance data. How does HyDE (Paper B) address the limitation that
+    ColBERT-style dense retrieval models depend on relevance labels and task-specific training, and why does this
+    matter for zero-shot retrieval?
+  ground_truth: ColBERT improves retrieval effectiveness by applying BERT's contextualized representations through
+    a late-interaction architecture, but like other dense retrieval models it relies on supervised relevance labels
+    and task-specific training to be effective. HyDE addresses this by generating a hypothetical document from the
+    query using an instruction-following language model, then encoding that synthetic document into an embedding
+    for retrieval—without any relevance labels or model fine-tuning. This matters because it removes the dependency
+    on labeled data and task-specific training that ColBERT-style models require, enabling precise zero-shot dense
+    retrieval. Thus HyDE can be seen as directly tackling the supervision bottleneck that ColBERT's approach leaves
+    unaddressed.
+  gold_evidence:
+  - ColBERT introduces a late interaction architecture that applies BERT's contextualized representations to rank
+    passages efficiently and effectively, but it operates within a supervised ranking paradigm requiring labeled
+    relevance data.
+  - Dense retrieval has been shown successful across tasks like web search, question answering, and fact verification,
+    with methods such as negative mining, distillation and task-specific pre-training proposed to improve the effectiveness
+    of supervised dense retrieval models. HyDE generates a hypothetical document and encodes it into an embedding,
+    requiring no relevance labels and no model training.
+  provenance: llm_synthesized
+  source_papers:
+  - '2004.12832'
+  - '2212.10496'
+  source_sections:
+  - 2004.12832#(front matter)
+  - 2212.10496#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+    reasoning_bridge: ColBERT's conclusion that contextualized late interaction yields strong ranking still presupposes
+      supervised relevance labels, and HyDE's contribution is precisely to eliminate that supervision requirement
+      via hypothetical document generation, so understanding ColBERT's supervised limitation is necessary to appreciate
+      what HyDE solves.
+  verification:
+    supported: false
+    reason: The evidence supports that ColBERT requires labeled relevance data and that HyDE generates a hypothetical
+      document and encodes it without relevance labels or training, but it never mentions an instruction-following
+      language model, zero-shot retrieval, or that HyDE removes the supervision bottleneck for zero-shot dense retrieval—so
+      key parts of the ground truth are unsupported.
+  query_type: cross_paper_multi_hop
+  id: cpm-002
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - cross_paper_multi_hop
+  - '2004.12832'
+  - AI-Agents-in-Depth-zh-CN
+  question: ColBERT 通过"延迟交互"（late interaction）在 BERT 之上实现了高效且有效的段落检索，但它的架构本质上仍是一个"检索—排序"式的单轮信息获取模型。若把 ColBERT 视为一个
+    Agent 的"检索工具"，那么按照《深入理解 AI Agent》一书的框架，ColBERT 缺少了现代 Agent 的哪些关键组成要素，才能被真正嵌入到 ReAct 循环中？
+  ground_truth: ColBERT 的贡献在于用 late interaction 在 BERT 之上兼顾检索的效率与效果，但它本质上仍是一个被动的、单轮的"查询→排序"检索模型，只提供检索结果这一种输出，本身不具备与外部世界交互的接口。而《深入理解
+    AI Agent》指出"现代 Agent = LLM + 上下文 + 工具"，其中工具是 Agent 的手脚、LLM 是大脑、上下文是眼睛，并通过 ReAct 循环（观察空间与动作空间）反复迭代。因此，若要把 ColBERT
+    作为工具嵌入 Agent，它只充当了"检索"这一动作，缺少 LLM 推理大脑、观察/动作空间接口以及 ReAct 循环所要求的迭代式决策能力，必须由外层 Agent 框架补齐这些要素，ColBERT 才能从单轮排序器升级为可被反复调用的检索工具。
+  gold_evidence:
+  - 'ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT — 提出在 BERT 之上使用
+    contextualized late interaction 进行段落检索，以兼顾效率与效果。'
+  - 1.1 现代Agent = LLM + 上下文+ 工具；1.1.1 观察空间与动作空间：模型与世界的接口；1.1.2 工具：Agent 的手脚；1.1.3 LLM：Agent 的大脑；1.1.4 上下文：Agent
+    的眼睛；1.1.5 ReAct 循环。
+  provenance: llm_synthesized
+  source_papers:
+  - '2004.12832'
+  - AI-Agents-in-Depth-zh-CN
+  source_sections:
+  - 2004.12832#(front matter)
+  - AI-Agents-in-Depth-zh-CN#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+    reasoning_bridge: ColBERT 只解决了"高效检索"这一单点能力，而 Agent 框架要求把这种能力作为"工具"嵌入 LLM+上下文+工具的 ReAct 循环中，因此必须理解 ColBERT 的检索器定位才能判断它在
+      Agent 架构中缺失的组件。
+  verification:
+    supported: true
+    reason: 证据明确给出 ColBERT 的 late interaction 检索贡献与单轮检索定位，并列出《深入理解 AI Agent》中"现代Agent=LLM+上下文+工具"及观察/动作空间、工具、LLM、上下文、ReAct
+      循环等要素，足以支撑该结论。
+  query_type: cross_paper_multi_hop
+  id: cpm-003
+  review_status: approved
+  notes: ''
+- _key:
+  - single_paper_factual
+  - '2401.15884'
+  question: According to the passage, why do large language models inevitably manifest hallucinations?
+  ground_truth: LLMs inevitably manifest hallucinations due to their struggle with factual errors and their inability
+    to secure the accuracy of generated texts solely by the parametric knowledge they encapsulate. This is illustrated
+    by examples where a low-quality retriever introduces irrelevant information that impedes generators from acquiring
+    accurate knowledge.
+  gold_evidence:
+  - Nevertheless, LLMs inevitably manifest hallucinations (Ji et al., 2023) due to their struggle with factual errors
+    (Mallen et al., 2023; Min et al., 2023) and inability to secure the accuracy of generated texts solely by the
+    parametric knowledge they encapsulate (Zhang et al., 2023b; Muhlgay et al., 2023).
+  provenance: extractive
+  source_papers:
+  - '2401.15884'
+  source_sections:
+  - 2401.15884#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: The evidence states the two causes (struggle with factual errors and inability to secure accuracy from
+      parametric knowledge alone), but it does not contain the illustrative example about a low-quality retriever
+      introducing irrelevant information, so that part of the ground truth is unsupported.
+  query_type: single_paper_factual
+  id: spf-001
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - single_paper_factual
+  - '2208.03299'
+  question: Atlas 在 Natural Questions 上仅用 64 个示例达到了多少准确率？
+  ground_truth: Atlas 在 Natural Questions 上仅用 64 个示例就达到了超过 42% 的准确率。它比一个 540B 参数的模型高出 3%，尽管其参数量少了 50 倍。
+  gold_evidence:
+  - Notably, Atlas reaches over 42% accuracy on Natural Questions using only 64 examples, outperforming a 540B parameters
+    model by 3% despite having 50x fewer parameters.
+  provenance: extractive
+  source_papers:
+  - '2208.03299'
+  source_sections:
+  - 2208.03299#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据明确说明 Atlas 仅用 64 个示例在 Natural Questions 上达到超过 42% 的准确率，并比 540B 参数模型高 3%，尽管参数量少 50 倍，完全支撑该 ground truth。
+  query_type: single_paper_factual
+  id: spf-002
+  review_status: approved
+  notes: ''
+- _key:
+  - single_paper_factual
+  - '2212.03533'
+  question: E5 是什么？它是如何训练的？
+  ground_truth: E5 是一个在广泛任务上迁移效果良好的最先进文本嵌入模型家族。它采用对比学习方式训练，弱监督信号来自作者整理的大规模文本对数据集 CCPairs。E5 可直接作为通用嵌入模型用于检索、聚类和分类等需要文本单向量表示的任务。
+  gold_evidence:
+  - This paper presents E5<sup>1</sup> , a family of state-of-the-art text embeddings that transfer well to a wide
+    range of tasks. The model is trained in a contrastive manner with weak supervision signals from our curated
+    large-scale text pair dataset (called CCPairs). E5 can be readily used as a general-purpose embedding model
+    for any tasks requiring a single-vector representation of texts such as retrieval, clustering, and classification,
+    achieving strong performance in both zero-shot and fine-tuned settings.
+  provenance: extractive
+  source_papers:
+  - '2212.03533'
+  source_sections:
+  - 2212.03533#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据完整覆盖了 ground truth 中 E5 的定义、对比学习训练方式、CCPairs 弱监督信号来源以及通用嵌入模型用途等全部事实。
+  query_type: single_paper_factual
+  id: spf-003
+  review_status: approved
+  notes: ''
+- _key:
+  - single_paper_factual
+  - '2410.05779'
+  question: LightRAG 通过什么方式提升信息检索的效率与理解能力？
+  ground_truth: LightRAG 通过整合基于图的索引方法来提升信息检索的效率与理解能力。它利用一个全面的知识图谱来促进快速且相关的文档检索，从而能够更深入地理解复杂查询。其双层检索范式可以同时提取具体信息和抽象信息，以满足多样化的用户需求。
+  gold_evidence:
+  - This work introduces an advancement in Retrieval-Augmented Generation (RAG) through the integration of a graph-based
+    indexing approach that enhances both efficiency and comprehension in information retrieval. LightRAG utilizes
+    a comprehensive knowledge graph to facilitate rapid and relevant document retrieval, enabling a deeper understanding
+    of complex queries. Its dual-level retrieval paradigm allows for the extraction of both specific and abstract
+    information, catering to diverse user needs.
+  provenance: extractive
+  source_papers:
+  - '2410.05779'
+  source_sections:
+  - 2410.05779#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据逐句对应地说明了基于图的索引方法、全面知识图谱、双层检索范式及满足多样化需求，完整支撑了声明中的全部事实。
+  query_type: single_paper_factual
+  id: spf-004
+  review_status: approved
+  notes: ''
+- _key:
+  - single_paper_factual
+  - '2402.03216'
+  question: M3-Embedding 支持多少种工作语言的语义检索？
+  ground_truth: M3-Embedding 为超过 100 种工作语言的语义检索提供统一支持。它同时还能完成稠密检索、多向量检索和稀疏检索三种常见检索功能。
+  gold_evidence:
+  - It provides a uniform support for the semantic retrieval of more than 100 working languages.
+  provenance: extractive
+  source_papers:
+  - '2402.03216'
+  source_sections:
+  - 2402.03216#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: 证据仅支持"超过100种工作语言的语义检索统一支持"，未提及稠密检索、多向量检索和稀疏检索三种功能，故ground truth部分内容无证据支撑。
+  query_type: single_paper_factual
+  id: spf-005
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - single_paper_factual
+  - '2401.18059'
+  question: RAPTOR 是什么？它如何构建层次化的树结构？
+  ground_truth: RAPTOR 是一种新颖的基于树的检索系统，它用不同抽象层级的上下文信息来增强大语言模型的参数化知识。它通过递归的聚类和摘要技术，构建出一个能够跨检索语料库各个部分综合信息的层次化树结构。在查询阶段，RAPTOR
+    利用该树结构进行更有效的检索。
+  gold_evidence:
+  - In this paper, we have presented RAPTOR, a novel tree-based retrieval system that augments the parametric knowledge
+    of large language models with contextual information at various levels of abstraction. By employing recursive
+    clustering and summarization techniques, RAPTOR creates a hierarchical tree structure that is capable of synthesizing
+    information across various sections of the retrieval corpora.
+  provenance: extractive
+  source_papers:
+  - '2401.18059'
+  source_sections:
+  - 2401.18059#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: 证据仅说明 RAPTOR 是树基检索系统、通过递归聚类和摘要构建层次树，但未提及“在查询阶段利用该树结构进行更有效的检索”这一事实。
+  query_type: single_paper_factual
+  id: spf-006
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - single_paper_factual
+  - '2002.08909'
+  question: REALM 如何增强语言模型预训练？
+  ground_truth: REALM 用一个神经知识检索器来增强语言模型预训练，该检索器从文本知识语料库 Z（例如整个 Wikipedia）中检索知识。语言建模目标的信号会一直反向传播穿过检索器，而检索器必须考虑 Z
+    中的数百万篇文档，这是一个显著的计算挑战。
+  gold_evidence:
+  - REALM augments language model pre-training with a neural knowledge retriever that retrieves knowledge from a
+    textual knowledge corpus, Z (e.g., all of Wikipedia). Signal from the language modeling objective backpropagates
+    all the way through the retriever, which must consider millions of documents in Z—a significant computational
+    challenge that we address.
+  provenance: extractive
+  source_papers:
+  - '2002.08909'
+  source_sections:
+  - 2002.08909#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据逐句对应了声称的真实答案：神经知识检索器、从文本知识语料库Z（如整个Wikipedia）检索、语言建模信号反向传播穿过检索器、需考虑数百万文档的计算挑战，均被证据完整覆盖。
+  query_type: single_paper_factual
+  id: spf-007
+  review_status: approved
+  notes: ''
+- _key:
+  - single_paper_factual
+  - '2210.03629'
+  question: ReAct 这篇论文的核心思想是什么？
+  ground_truth: ReAct 提出了一种让语言模型在交错进行的推理轨迹与任务特定动作之间协同工作的通用范式。在该范式中，推理轨迹帮助模型归纳、追踪和更新行动计划，并处理异常情况；而动作则使模型能够与外部环境（如知识库或环境）交互并收集额外信息。该方法在语言理解和交互式决策任务上都取得了优于单纯推理或单纯行动基线的效果。
+  gold_evidence:
+  - 'We explore the use of large language models (LLMs) to generate both reasoning traces and task-specific actions
+    in an interleaved manner, allowing for greater synergy between the two: reasoning traces help the model induce,
+    track, and update action plans as well as handle exceptions, while actions allow it to interface with external
+    sources, such as knowledge bases or environments, to gather additional information.'
+  provenance: extractive
+  source_papers:
+  - '2210.03629'
+  source_sections:
+  - 2210.03629#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: 证据仅描述了 ReAct 的交错推理-动作范式及其作用，未提及该方法在语言理解和交互式决策任务上优于单纯推理或单纯行动基线的实验结果，故该部分事实缺乏证据支持。
+  query_type: single_paper_factual
+  id: spf-008
+  review_status: approved
+  notes: 全文核查 approved
+review:
+  approved: 100
+  pending: 0
+  rejected: 0
+  frozen_at: '2026-10-06T21:00:18'
+generator_notes: 分层抽样 15 条（spf 8 + cpc 4 + cpm 3），用于 V0-V2 消融补跑
