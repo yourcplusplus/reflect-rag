@@ -1,0 +1,25 @@
+# Dependencies for the REST API service layer (project/api).
+#
+# The RAG core keeps its own pinning in requirements.txt; this file only adds
+# what the API needs on top of it. Install BOTH:
+#
+#   pip install -r requirements.txt          # RAG core (torch, langgraph, gradio, ...)
+#   pip install -r requirements-api.txt      # API service layer
+#
+# fastapi/uvicorn/SQLAlchemy are already pulled in transitively by
+# langchain-deepseek/ragas, but they are pinned here so the API layer can be
+# installed on its own and cannot drift underneath us.
+
+fastapi==0.142.2
+uvicorn[standard]==0.54.0
+
+# Multipart form parsing for POST /api/v1/documents (file upload).
+python-multipart==0.0.32
+
+# PostgreSQL persistence: conversations / messages / documents.
+SQLAlchemy==2.1.3
+alembic==1.20.0
+psycopg[binary]==3.3.6
+
+# Redis: answer cache (TTL 1h) + embedding cache.
+redis==8.1.0

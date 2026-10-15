@@ -105,9 +105,82 @@ Run an evaluation pass:
 TRACE_ENABLED=true python evals/run_eval.py --variant V3
 ```
 
+## REST API
+
+The Gradio app stays as it is; `project/api/` adds a FastAPI service layer on
+top of the same `RAGSystem` — same retrieval, same reflection, same citations —
+plus conversation persistence (PostgreSQL) and caching (Redis).
+
+```
+project/api/
+├── main.py             FastAPI app, CORS, lifespan, /health, /api/v1/cache/stats
+├── deps.py             app state + DB session / cache / RAG service dependencies
+├── schemas.py          Pydantic request/response + SSE event models
+├── cache.py            Redis: answer cache (TTL 1h) + embedding cache
+├── patches.py          runtime shims (embedding cache, Qdrant server mode)
+├── db/                 SQLAlchemy models (conversations, messages, documents)
+├── migrations/         Alembic revisions
+├── services/           RAG lifecycle + LangGraph stream → API events
+└── routers/            chat, documents, conversations
+```
+
+### Run it locally
+
+```bash
+pip install -r requirements-api.txt          # on top of requirements.txt
+
+# once: create the schema (needs PostgreSQL; DATABASE_URL, default localhost:5432)
+alembic upgrade head
+
+# start the API (from project/, or with --app-dir project from the root)
+cd project && uvicorn api.main:app --port 8000
+```
+
+Interactive docs: [http://localhost:8000/docs](http://localhost:8000/docs).
+
+| Endpoint | Notes |
+|---|---|
+| `POST /api/v1/chat` | SSE stream: `conversation`, `cache`, `status`, `node`, `tool_call`, `tool_result`, `tool_skipped`, `token`, `done` |
+| `POST /api/v1/documents` | Multipart upload (`.pdf`, `.md`) → chunk, embed, index |
+| `GET /api/v1/documents` | Registered documents + `indexed_sources` (what is in the knowledge base) |
+| `GET /api/v1/conversations` | Conversations with message counts and last-message previews |
+| `GET /api/v1/conversations/{id}/messages` | Full transcript of one conversation |
+| `GET /health` | Per-component readiness (RAG / PostgreSQL / Redis / Qdrant); 503 until the models are loaded |
+| `GET /api/v1/cache/stats` | Cache hit/miss counters and key counts |
+
+```bash
+curl -N -X POST http://localhost:8000/api/v1/chat \
+  -H 'Content-Type: application/json' \
+  -d '{"message": "What problem does DPR solve?"}'
+```
+
+The first turn runs the graph and is written to `messages`; repeating the same
+question with the same conversation history is served from Redis (TTL 1h). Each
+conversation maps to its own LangGraph checkpoint thread, so `conversation_id`
+carries agent memory across turns (the checkpointer is in-memory, so that memory
+is per-process while the transcript itself is persisted); send
+`"use_cache": false` to force a fresh run.
+
+### Docker Compose (API + PostgreSQL + Redis + Qdrant)
+
+```bash
+docker compose up --build      # first boot downloads BGE-M3 + the reranker (~4.5 GB)
+curl http://localhost:8000/health
+```
+
+Compose starts the Qdrant **server** and sets `QDRANT_URL` for the API; the API
+redirects the core's `QdrantClient(path=...)` to it (see `project/api/patches.py`),
+which is what lets the API and the Gradio UI share one index. Without
+`QDRANT_URL` the core keeps using embedded local-mode Qdrant — that mode takes an
+exclusive file lock, so run only one process at a time against `qdrant_db/`.
+
+Redis is optional everywhere: if it is unreachable the API logs a warning and
+answers without caching (`/health` reports `degraded`). No RAG core file
+(`core/`, `rag_agent/`, `db/`) was modified for any of this.
+
 ## Tech Stack
 
-LangGraph · LangChain · Qdrant · BGE-M3 · BGE-Reranker-v2-m3 · DeepSeek API · Gradio · RAGAS
+LangGraph · LangChain · Qdrant · BGE-M3 · BGE-Reranker-v2-m3 · DeepSeek API · Gradio · RAGAS · FastAPI · PostgreSQL · Redis · Docker
 
 ## Known Limitations
 

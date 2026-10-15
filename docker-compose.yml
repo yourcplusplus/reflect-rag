@@ -1,0 +1,124 @@
+# ReflectRAG — full stack: API + PostgreSQL + Redis + Qdrant.
+#
+#   docker compose up --build          # first boot downloads BGE-M3 + reranker (~4.5 GB)
+#   open http://localhost:8000/docs
+#
+# Configuration comes from the repository-root .env (see .env.example) and from
+# project/.env if it exists (DEEPSEEK_API_KEY, HF_ENDPOINT).
+#
+#   HF_ENDPOINT  mirror used to fetch model weights on restricted networks
+#   DEEPSEEK_API_KEY  required for real answers
+#
+# The Gradio UI is NOT part of this stack: keep running it with
+# `python project/app.py` (see README), pointing it at the same Qdrant service
+# via QDRANT_URL if you want both to share one knowledge base.
+name: reflect-rag
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-reflect}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-reflect}
+      POSTGRES_DB: ${POSTGRES_DB:-reflect_rag}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-reflect} -d ${POSTGRES_DB:-reflect_rag}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    # Cache only: answers (TTL 1h) and embeddings. Losing the volume on restart
+    # just means a cold cache, so persistence is off.
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"
+      - "${QDRANT_GRPC_PORT:-6334}:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    # No healthcheck: the image ships neither curl nor wget. The API waits for
+    # the RAG models anyway (~minutes), which is far longer than Qdrant's boot.
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    env_file:
+      # project/.env holds DEEPSEEK_API_KEY + HF_ENDPOINT for the Gradio app;
+      # optional here so a checkout without it still boots.
+      - path: project/.env
+        required: false
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-reflect}:${POSTGRES_PASSWORD:-reflect}@postgres:5432/${POSTGRES_DB:-reflect_rag}
+      REDIS_URL: redis://redis:6379/0
+      # Server mode: db/vector_db_manager.py builds QdrantClient(path=...), and
+      # the API redirects that to this URL (see project/api/patches.py), so the
+      # API and the Gradio UI can share one Qdrant.
+      QDRANT_URL: http://qdrant:6333
+      HF_ENDPOINT: ${HF_ENDPOINT:-https://hf-mirror.com}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      ANSWER_CACHE_TTL: ${ANSWER_CACHE_TTL:-3600}
+      EMBEDDING_CACHE_TTL: ${EMBEDDING_CACHE_TTL:-604800}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      # CPU-only hosts: set ENABLE_RERANKER=false to skip the cross-encoder.
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      # Model weights (BGE-M3 + BGE-Reranker-v2-m3). Reused across rebuilds.
+      - hf_cache:/root/.cache/huggingface
+      # Parent chunks of the document index (child vectors live in Qdrant).
+      - parent_store:/app/parent_store
+      - markdown_docs:/app/markdown_docs
+      - uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    # GPU hosts: uncomment to give the container the GPU (needs the NVIDIA
+    # container toolkit) and build with TORCH_INDEX_URL=.../cu124.
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    healthcheck:
+      # Ready only once the RAG models are loaded and PostgreSQL answers.
+      test:
+        ["CMD", "python", "-c",
+         "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=10).status == 200 else 1)"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 600s
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  qdrant_storage:
+  hf_cache:
+  parent_store:
+  markdown_docs:
+  uploads:

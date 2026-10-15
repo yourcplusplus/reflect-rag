@@ -1,0 +1,40 @@
+# ReflectRAG API image.
+#
+# The API reuses the whole RAG core, so this installs requirements.txt (torch,
+# langgraph, the HuggingFace stack) on top of requirements-api.txt.
+#
+#   docker build -f Dockerfile.api -t reflectrag-api .
+#
+# Build context is the repository root.
+FROM python:3.13-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    HF_HOME=/root/.cache/huggingface
+
+# libgomp1 is the OpenMP runtime torch/BGE need; curl is used by health probes.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgomp1 curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# CPU-only torch keeps the image several GB smaller. On a CUDA host, either
+# build with --build-arg TORCH_INDEX_URL=https://download.pytorch.org/whl/cu124
+# and run with the nvidia runtime, or leave torch out entirely and mount it.
+ARG TORCH_INDEX_URL=https://download.pytorch.org/whl/cpu
+
+COPY requirements.txt requirements-api.txt ./
+RUN pip install --upgrade pip \
+    && pip install --index-url "${TORCH_INDEX_URL}" torch torchvision \
+    && pip install -r requirements.txt -r requirements-api.txt
+
+COPY alembic.ini ./
+COPY project ./project
+
+EXPOSE 8000
+
+# Migrations run on boot so `docker compose up` needs no manual step; alembic is
+# idempotent once the schema is at head.
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn api.main:app --app-dir project --host 0.0.0.0 --port ${API_PORT:-8000}"]

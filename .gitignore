@@ -10,6 +10,10 @@ markdown_docs/
 parent_store/
 docs/
 
+# API uploads (POST /api/v1/documents); the indexed sources live in the stores above.
+uploads/
+docker-compose.override.yml
+
 notebooks/output.csv
 
 ragas_*.csv
