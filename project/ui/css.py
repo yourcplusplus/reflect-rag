@@ -1,5 +1,63 @@
 custom_css = """
     /* ============================================
+       DARK PALETTE (pinned)
+       ============================================
+       This UI is dark by design, but Gradio picks its palette from the
+       visitor's OS / browser theme. With a light-mode browser the theme text
+       colour stayed dark (--body-text-color: #27272a) while this stylesheet
+       forced dark backgrounds, so answers rendered dark-on-dark
+       (measured contrast 1.17:1 — invisible). The variables below pin the
+       dark palette for the whole app, so contrast no longer depends on the
+       visitor's system theme. Values mirror Gradio's own dark theme
+       (neutral-100 on neutral-950); force_dark_js additionally switches
+       Gradio's own dark styles on.
+       ============================================ */
+    .gradio-container {
+        --body-background-fill: #0f0f0f;
+        --body-text-color: #f4f4f5;
+        --body-text-color-subdued: #a1a1aa;
+
+        --background-fill-primary: #0f0f0f;
+        --background-fill-secondary: #18181b;
+
+        --block-background-fill: #1a1a1a;
+        --block-border-color: #3f3f3f;
+        --block-label-text-color: #a3a3a3;
+        --block-title-text-color: #e5e5e5;
+        --block-info-text-color: #a1a1aa;
+
+        --panel-background-fill: #1a1a1a;
+        --panel-border-color: #3f3f3f;
+
+        --border-color-primary: #3f3f3f;
+        --border-color-accent: #3b82f6;
+
+        --input-background-fill: #1a1a1a;
+        --input-background-fill-focus: #1a1a1a;
+        --input-background-fill-hover: #1f1f1f;
+        --input-border-color: #3f3f3f;
+        --input-border-color-focus: #3b82f6;
+        --input-border-color-hover: #52525b;
+        --input-placeholder-color: #71717a;
+
+        --code-background-fill: #161616;
+
+        --table-border-color: #3f3f3f;
+        --table-even-background-fill: #141414;
+        --table-odd-background-fill: #1a1a1a;
+        --table-text-color: #e5e5e5;
+
+        --link-text-color: #60a5fa;
+        --link-text-color-hover: #93c5fd;
+        --link-text-color-active: #93c5fd;
+        --link-text-color-visited: #a78bfa;
+
+        --checkbox-background-color: #1a1a1a;
+        --checkbox-border-color: #3f3f3f;
+        --checkbox-label-background-fill: #1a1a1a;
+    }
+
+    /* ============================================
        MAIN CONTAINER
        ============================================ */
     .progress-text { 
@@ -12,6 +70,7 @@ custom_css = """
         margin: 0 auto !important;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
         background: #0f0f0f !important;
+        color: var(--body-text-color) !important;
     }
     
     /* ============================================
@@ -101,12 +160,17 @@ custom_css = """
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
+        color: var(--body-text-color) !important;
     }
     
     textarea[placeholder="Type a message..."]:focus {
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
+    }
+    
+    textarea[placeholder="Type a message..."]::placeholder {
+        color: var(--input-placeholder-color) !important;
     }
     
     .gr-text-input:has(textarea[placeholder="Type a message..."]),
@@ -182,7 +246,7 @@ custom_css = """
     
     textarea[readonly] {
         background: #1a1a1a !important;
-        color: #a3a3a3 !important;
+        color: #e5e5e5 !important;
     }
     
     /* ============================================
@@ -204,15 +268,26 @@ custom_css = """
     
     /* ============================================
        CHATBOT CONTAINER
-       ============================================ */
-    .chatbot {
+       ============================================
+       Gradio 6 puts the class `chatbot` on every markdown span of a message
+       (`<span class="md chatbot prose">`), NOT on the chat panel. The previous
+       `.chatbot { ... }` rule therefore painted each message's text block
+       instead of the panel, which is why answer text sat on an unintended
+       background. The panel is addressed through its elem_id (project/ui/
+       gradio_app.py); markdown content stays transparent so it sits on the
+       bubble it belongs to. */
+    #chatbot-panel {
         border-radius: 5px !important;
-        background: #1a1a1a !important;
+        background: var(--block-background-fill) !important;
         border: none !important;
     }
 
-    .chatbot .message-wrap,
-    .chatbot > div {
+    #chatbot-panel .prose {
+        background: transparent !important;
+    }
+
+    #chatbot-panel .message-wrap,
+    #chatbot-panel .bubble-wrap {
         gap: 8px !important;
         padding: 12px !important;
     }
@@ -225,16 +300,48 @@ custom_css = """
     }
 
     .message.user {
-        background: #3b82f6 !important;
+        /* blue-600: white text clears WCAG AA (4.9:1) on it */
+        background: #2563eb !important;
         color: white !important;
     }
     
     .message.bot {
         background: #1f1f1f !important;
-        color: #e5e5e5 !important;
+        color: var(--body-text-color) !important;
         border: 1px solid #3f3f3f !important;
         width: fit-content !important;
         max-width: 90% !important;
+    }
+
+    /* Answer text, list items, citations and code inside a message follow the
+       pinned body colour, so they stay readable whatever the theme mode the
+       browser reports. Links keep their own accent colour. */
+    #chatbot-panel .prose p,
+    #chatbot-panel .prose li,
+    #chatbot-panel .prose strong,
+    #chatbot-panel .prose em,
+    #chatbot-panel .prose blockquote,
+    #chatbot-panel .prose th,
+    #chatbot-panel .prose td,
+    #chatbot-panel .prose h1,
+    #chatbot-panel .prose h2,
+    #chatbot-panel .prose h3,
+    #chatbot-panel .prose h4 {
+        color: var(--body-text-color) !important;
+    }
+
+    #chatbot-panel .message.user .prose p,
+    #chatbot-panel .message.user .prose li,
+    #chatbot-panel .message.user .prose strong,
+    #chatbot-panel .message.user .prose em {
+        color: #ffffff !important;
+    }
+
+    #chatbot-panel .prose pre,
+    #chatbot-panel .prose code {
+        background: var(--code-background-fill) !important;
+        color: var(--body-text-color) !important;
+        border: 1px solid #3f3f3f !important;
     }
     
     .message-row img {
@@ -265,6 +372,10 @@ custom_css = """
     h1, h2, h3, h4, h5, h6 {
         color: #e5e5e5 !important;
     }
+
+    p, label, span, li {
+        color: inherit;
+    }
     
     /* ============================================
        GLOBAL OVERRIDES
@@ -276,4 +387,20 @@ custom_css = """
     footer {
         visibility: hidden;
     }
+"""
+
+# Gradio derives its palette from the visitor's OS/browser theme. This script
+# pins the app to dark mode so Gradio's own dark styles apply as well as the
+# pinned CSS variables above (which stay in force even if this script is
+# blocked, or if the theme is switched back to light from Settings).
+force_dark_js = """
+function reflectragForceDark() {
+    document.documentElement.classList.add('dark');
+    if (document.body) {
+        document.body.classList.add('dark');
+    }
+}
+reflectragForceDark();
+document.addEventListener('DOMContentLoaded', reflectragForceDark);
+setTimeout(reflectragForceDark, 800);
 """

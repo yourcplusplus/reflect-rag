@@ -16,11 +16,13 @@ class _SuppressOtelDetachWarning(logging.Filter):
 
 logging.getLogger("opentelemetry.context").addFilter(_SuppressOtelDetachWarning())
 
-from ui.css import custom_css
+from ui.css import custom_css, force_dark_js
 from ui.gradio_app import create_gradio_ui
 
 if __name__ == "__main__":
     print("\n🔨 Creating RAG Assistant...")
     demo = create_gradio_ui()
     print("\n🚀 Launching RAG Assistant...")
-    demo.launch(css=custom_css)
+    # force_dark_js pins Gradio's own theme to dark mode; custom_css carries the
+    # matching palette so contrast does not depend on the visitor's browser/OS theme.
+    demo.launch(css=custom_css, js=force_dark_js)

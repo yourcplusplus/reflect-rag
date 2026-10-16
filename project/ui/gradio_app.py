@@ -86,7 +86,11 @@ def create_gradio_ui():
                 placeholder="<strong>Ask me anything!</strong><br><em>I'll search, reason, and act to give you the best answer :)</em>",
                 show_label=False,
                 avatar_images=(None, os.path.join(ASSETS_DIR, "chatbot_avatar.png")),
-                layout="bubble"
+                layout="bubble",
+                # Stable hook for the stylesheet: Gradio 6 also puts the class
+                # `chatbot` on each message's markdown span, so the panel needs
+                # an id to be styled unambiguously.
+                elem_id="chatbot-panel"
             )
             chatbot.clear(clear_chat_handler)
             
