@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from api import patches
 from api.cache import RedisCache
 from api.db.base import SessionLocal
+from api.ingest.queue import IngestQueue
 from api.services.rag_service import RagService
 from api.settings import Settings, settings
 
@@ -32,14 +33,19 @@ RAG_NOT_READY_DETAIL = "RAG system is still initializing; poll /health and retry
 class AppState:
     """Everything the lifespan owns, reachable from `request.app.state`."""
 
-    def __init__(self, app_settings: Settings | None = None) -> None:
+    def __init__(self, app_settings: Settings | None = None, checkpointer=None) -> None:
         self.settings = app_settings or settings
         self.cache = RedisCache(
             self.settings.redis_url,
             namespace=self.settings.cache_namespace,
             enabled=self.settings.redis_enabled,
         )
-        self.service = RagService()
+        # Built by the lifespan (PostgresSaver) and handed to the graph; None
+        # means the service falls back to InMemorySaver.
+        self.checkpointer = checkpointer
+        self.service = RagService(checkpointer=checkpointer)
+        # Producer side of the async ingest queue (the consumer runs in worker.py).
+        self.ingest_queue = IngestQueue()
         self.patches: dict = {}
         self.init_task: asyncio.Task | None = None
 
@@ -71,6 +77,7 @@ class AppState:
             except Exception:
                 logger.warning("RAG init did not finish before shutdown")
         await asyncio.to_thread(self.service.shutdown)
+        await asyncio.to_thread(self.ingest_queue.close)
         await asyncio.to_thread(self.cache.close)
 
 

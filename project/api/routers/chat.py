@@ -315,6 +315,7 @@ async def chat(
                     cache_key,
                     answer,
                     ttl=state.settings.answer_cache_ttl,
+                    jitter=state.settings.answer_cache_ttl_jitter,
                     meta={"intent": intent, "latency_ms": latency_ms},
                 )
             except Exception as exc:  # cache writes must never break a turn

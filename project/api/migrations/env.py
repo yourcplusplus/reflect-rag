@@ -29,6 +29,18 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 
+def include_object(obj, name, type_, reflected, compare_to):
+    """Keep tables this project does not own out of autogenerate.
+
+    PostgresSaver creates its own ``checkpoint_*`` tables in the same database.
+    Without this filter ``alembic revision --autogenerate`` sees them as
+    "removed from the model" and proposes dropping them.
+    """
+    if type_ == "table" and reflected and name not in Base.metadata.tables:
+        return False
+    return True
+
+
 def _database_url() -> str:
     # Escape '%' for configparser interpolation (URL-encoded passwords!).
     return settings.database_url.replace("%", "%%")
@@ -43,6 +55,7 @@ def run_migrations_offline() -> None:
         dialect_opts={"paramstyle": "named"},
         compare_type=True,
         compare_server_default=True,
+        include_object=include_object,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -62,6 +75,7 @@ def run_migrations_online() -> None:
             target_metadata=target_metadata,
             compare_type=True,
             compare_server_default=True,
+            include_object=include_object,
         )
         with context.begin_transaction():
             context.run_migrations()

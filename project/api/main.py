@@ -16,11 +16,13 @@ or point both at a Qdrant server via ``QDRANT_URL`` (what docker compose does).
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 import sys
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Any
 
 from api.settings import settings  # noqa: F401  (imported first: loads .env before the core)
 
@@ -39,6 +41,7 @@ from sqlalchemy.orm import Session  # noqa: E402
 from api import __version__  # noqa: E402
 from api.db import repository  # noqa: E402
 from api.deps import DB_UNAVAILABLE_DETAIL, AppState, get_app_state, get_db  # noqa: E402
+from api.rate_limit import RedisRateLimitMiddleware  # noqa: E402
 from api.routers import chat, conversations, documents  # noqa: E402
 from api.schemas import CacheStatsOut, ComponentHealth, HealthOut  # noqa: E402
 
@@ -55,20 +58,70 @@ conversation history on top of the existing LangGraph agent.
 * `POST /api/v1/chat` streams a turn as Server-Sent Events.
 * `POST /api/v1/documents` indexes PDFs/Markdown; `GET` lists them.
 * `GET /api/v1/conversations` lists persisted conversations.
-* Answers are cached in Redis (TTL 1h) together with dense embeddings.
+* Answers are cached in Redis (TTL 1h + jitter) together with dense embeddings.
+* LangGraph checkpoints live in PostgreSQL, so conversation memory survives restarts.
+* LLM calls retry with exponential backoff and degrade to a fallback answer.
+* `POST /api/v1/chat` is rate limited per IP (Redis INCR + EXPIRE).
 """
+
+
+def _open_postgres_checkpointer(cfg) -> tuple[Any, Any]:
+    """Open a PostgresSaver and create its tables (blocking; run in a thread).
+
+    Returns the saver and the context manager that owns its connection, so the
+    lifespan can keep it open for the process lifetime and close it on shutdown.
+    """
+    from langgraph.checkpoint.postgres import PostgresSaver
+
+    cm = PostgresSaver.from_conn_string(cfg.postgres_dsn)
+    saver = cm.__enter__()
+    try:
+        saver.setup()  # idempotent: creates/migrates checkpoint_* tables
+    except BaseException:
+        cm.__exit__(None, None, None)
+        raise
+    return saver, cm
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    state = AppState(settings)
+    checkpointer = None
+    checkpointer_cm = None
+    if settings.checkpoint_backend == "postgres":
+        try:
+            checkpointer, checkpointer_cm = await asyncio.to_thread(
+                _open_postgres_checkpointer, settings
+            )
+        except Exception as exc:
+            logger.error(
+                "PostgreSQL checkpointer unavailable (%s: %s); falling back to "
+                "InMemorySaver — conversation state will not survive a restart",
+                type(exc).__name__,
+                exc,
+            )
+    else:
+        logger.warning(
+            "CHECKPOINT_BACKEND=%s: LangGraph state is in-process only",
+            settings.checkpoint_backend,
+        )
+
+    state = AppState(settings, checkpointer=checkpointer)
     app.state.reflectrag = state
-    logger.info("Starting API (qdrant=%s)", settings.qdrant_url or "embedded local mode")
-    await state.startup()
+    logger.info(
+        "Starting API (qdrant=%s, checkpoints=%s)",
+        settings.qdrant_url or "embedded local mode",
+        state.service.checkpoint_backend,
+    )
     try:
+        await state.startup()
         yield
     finally:
         await state.shutdown()
+        if checkpointer_cm is not None:
+            try:
+                await asyncio.to_thread(checkpointer_cm.__exit__, None, None, None)
+            except Exception:
+                logger.warning("Could not close the PostgreSQL checkpointer", exc_info=True)
         logger.info("API stopped")
 
 
@@ -82,6 +135,15 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
+# Added before CORS so CORS wraps it: 429 responses then carry the CORS
+# headers a browser client needs to read them.
+app.add_middleware(
+    RedisRateLimitMiddleware,
+    limit=settings.rate_limit_requests,
+    window_seconds=settings.rate_limit_window_seconds,
+    enabled=settings.rate_limit_enabled,
+    trust_proxy=settings.rate_limit_trust_proxy,
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -146,6 +208,7 @@ def health(response: Response, state: AppState = Depends(get_app_state)) -> Heal
             "collection": rag_status["collection"],
             "init_seconds": rag_status["init_seconds"],
             "busy": rag_status["busy"],
+            "checkpoint_backend": rag_status["checkpoint_backend"],
         },
     )
 

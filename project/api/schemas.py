@@ -14,9 +14,9 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 Role = Literal["user", "assistant"]
-DocumentStatus = Literal["indexed", "skipped", "failed"]
+DocumentStatus = Literal["pending", "indexing", "indexed", "skipped", "failed"]
 HealthStatus = Literal["ok", "degraded", "initializing", "error"]
-ChatOutcome = Literal["ok", "error", "cancelled"]
+ChatOutcome = Literal["ok", "degraded", "error", "cancelled"]
 
 
 # --------------------------------------------------------------------- chat
@@ -187,9 +187,13 @@ class DocumentOut(BaseModel):
     source_path: str | None = None
     markdown_path: str | None = None
     size_bytes: int | None = None
+    attempts: int = Field(default=0, description="Failed indexing attempts so far.")
+    task_id: str | None = Field(default=None, description="Queue task id (for log correlation).")
+    content_hash: str | None = Field(default=None, description="SHA-256 of the upload; idempotency key.")
     error: str | None = None
     meta: dict[str, Any] | None = None
     created_at: datetime
+    updated_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -206,11 +210,38 @@ class DocumentListOut(BaseModel):
     )
 
 
-class DocumentUploadOut(BaseModel):
-    documents: list[DocumentOut]
-    added: int = Field(description="Files newly chunked + embedded.")
-    skipped: int = Field(description="Files already in the knowledge base.")
-    failed: int = Field(description="Files that could not be processed.")
+class DocumentEnqueueItem(BaseModel):
+    """One upload accepted (or deduplicated) by POST /api/v1/documents."""
+
+    document_id: uuid.UUID
+    filename: str
+    status: DocumentStatus
+    deduplicated: bool = Field(
+        description="True when the same content_hash was already registered, so nothing was enqueued."
+    )
+
+
+class DocumentEnqueueOut(BaseModel):
+    """202 body: the files are persisted and queued, not indexed yet."""
+
+    documents: list[DocumentEnqueueItem]
+    queued: int = Field(description="Rows pushed onto the Redis ingest queue.")
+    deduplicated: int = Field(description="Files whose content was already registered.")
+
+
+class QueueStatsOut(BaseModel):
+    """Queue depth plus the PostgreSQL-side task state counts."""
+
+    queue_len: int = Field(description="LLEN doc:ingest:queue — waiting tasks.")
+    processing_len: int = Field(description="LLEN doc:ingest:processing — reserved tasks.")
+    pending_count: int = 0
+    indexing_count: int = 0
+    indexed_count: int = 0
+    failed_count: int = 0
+    skipped_count: int = 0
+    max_attempts: int = 3
+    processing_key: str = ""
+    queue_key: str = ""
 
 
 # ------------------------------------------------------------------ health

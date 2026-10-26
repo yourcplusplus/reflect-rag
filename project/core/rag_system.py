@@ -10,7 +10,13 @@ from core.observability import Observability
 
 class RAGSystem:
 
-    def __init__(self, collection_name=config.CHILD_COLLECTION):
+    def __init__(
+        self,
+        collection_name=config.CHILD_COLLECTION,
+        *,
+        checkpointer=None,
+        llm_wrapper=None,
+    ):
         self.collection_name = collection_name
         self.vector_db = VectorDbManager()
         self.parent_store = ParentStoreManager()
@@ -20,6 +26,11 @@ class RAGSystem:
         self.trace_collector = None
         self.thread_id = str(uuid.uuid4())
         self.recursion_limit = config.GRAPH_RECURSION_LIMIT
+        # Optional seams used by the API layer: a persistent LangGraph
+        # checkpointer (PostgreSQL) and a decorator around the chat model
+        # (tenacity retry/backoff). ``None`` keeps the Gradio app's behaviour.
+        self.checkpointer = checkpointer
+        self.llm_wrapper = llm_wrapper
 
     def initialize(self):
         self.vector_db.create_collection(self.collection_name)
@@ -48,8 +59,15 @@ class RAGSystem:
             temperature=config.LLM_TEMPERATURE,
             request_timeout=60,   # fail fast on network stalls instead of freezing the UI for minutes
         )
+        if self.llm_wrapper is not None:
+            llm = self.llm_wrapper(llm)
         tools = ToolFactory(collection).create_tools()
-        self.agent_graph = create_agent_graph(llm, tools, dense_collection=dense_collection)
+        self.agent_graph = create_agent_graph(
+            llm,
+            tools,
+            dense_collection=dense_collection,
+            checkpointer=self.checkpointer,
+        )
 
     def get_config(self):
         cfg = {"configurable": {"thread_id": self.thread_id}, "recursion_limit": self.recursion_limit}

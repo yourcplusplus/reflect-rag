@@ -17,6 +17,10 @@ from sqlalchemy.orm import Session
 from api.db.models import (
     ROLE_ASSISTANT,
     ROLE_USER,
+    STATUS_FAILED,
+    STATUS_INDEXED,
+    STATUS_INDEXING,
+    STATUS_PENDING,
     Conversation,
     Document,
     Message,
@@ -236,6 +240,9 @@ def add_document(
     size_bytes: int | None = None,
     error: str | None = None,
     meta: dict[str, Any] | None = None,
+    content_hash: str | None = None,
+    task_id: str | None = None,
+    attempts: int = 0,
 ) -> Document:
     document = Document(
         filename=filename,
@@ -245,10 +252,107 @@ def add_document(
         size_bytes=size_bytes,
         error=error,
         meta=meta,
+        content_hash=content_hash,
+        task_id=task_id,
+        attempts=attempts,
     )
     session.add(document)
     session.flush()
     return document
+
+
+def get_document(session: Session, document_id: uuid.UUID) -> Document | None:
+    return session.get(Document, document_id)
+
+
+def find_document_by_hash(session: Session, content_hash: str) -> Document | None:
+    """幂等查询：按文件内容 sha256 找已有文档（唯一索引兜底）。"""
+    return session.execute(
+        select(Document).where(Document.content_hash == content_hash).limit(1)
+    ).scalars().first()
+
+
+def document_status_counts(session: Session) -> dict[str, int]:
+    """各状态的文档数，/queues/stats 用（积压观测的另一半）。"""
+    rows = session.execute(
+        select(Document.status, func.count(Document.id)).group_by(Document.status)
+    ).all()
+    return {status: int(count) for status, count in rows}
+
+
+def mark_document_indexing(session: Session, document: Document) -> None:
+    """状态机：pending -> indexing（干活前先落库，崩溃恢复才能看见）。"""
+    document.status = STATUS_INDEXING
+    document.updated_at = func.now()
+    session.add(document)
+
+
+def mark_document_indexed(
+    session: Session, document: Document, *, markdown_path: str | None = None
+) -> None:
+    document.status = STATUS_INDEXED
+    document.error = None
+    if markdown_path:
+        document.markdown_path = markdown_path
+    document.updated_at = func.now()
+    session.add(document)
+
+
+def mark_document_retry(session: Session, document: Document, *, error: str) -> None:
+    """消费失败且还有重试预算：attempts+1，回到 pending 重新入队。"""
+    document.status = STATUS_PENDING
+    document.attempts = (document.attempts or 0) + 1
+    document.error = error
+    document.updated_at = func.now()
+    session.add(document)
+
+
+def mark_document_pending(session: Session, document: Document, *, error: str | None = None) -> None:
+    """崩溃恢复：回到 pending 重新入队，不计入重试次数（不是文档的错）。"""
+    document.status = STATUS_PENDING
+    if error is not None:
+        document.error = error
+    document.updated_at = func.now()
+    session.add(document)
+
+
+def mark_document_failed(session: Session, document: Document, *, error: str) -> None:
+    """失败隔离（业务死信）：attempts 达上限后落 failed + error。"""
+    document.status = STATUS_FAILED
+    document.attempts = (document.attempts or 0) + 1
+    document.error = error
+    document.updated_at = func.now()
+    session.add(document)
+
+
+def mark_document_enqueue_failed(session: Session, document: Document, *, error: str) -> None:
+    """生产端投递失败：落 failed + error，但不算一次索引尝试（attempts 不变）。"""
+    document.status = STATUS_FAILED
+    document.error = error
+    document.updated_at = func.now()
+    session.add(document)
+
+
+def reset_document_for_reingest(
+    session: Session,
+    document: Document,
+    *,
+    source_path: str,
+    filename: str,
+    size_bytes: int | None,
+    meta: dict[str, Any] | None,
+) -> None:
+    """失败文档允许重投：attempts 归零、清空 error、回到 pending。"""
+    document.status = STATUS_PENDING
+    document.attempts = 0
+    document.error = None
+    document.source_path = source_path
+    document.filename = filename
+    document.size_bytes = size_bytes
+    if meta is not None:
+        document.meta = meta
+    document.updated_at = func.now()
+    session.add(document)
 
 
 def list_documents(
@@ -309,6 +413,16 @@ __all__ = [
     "count_messages",
     "create_conversation",
     "delete_conversation",
+    "document_status_counts",
+    "find_document_by_hash",
+    "get_document",
+    "mark_document_failed",
+    "mark_document_enqueue_failed",
+    "mark_document_indexed",
+    "mark_document_indexing",
+    "mark_document_pending",
+    "mark_document_retry",
+    "reset_document_for_reingest",
     "get_conversation",
     "list_conversations",
     "list_documents",

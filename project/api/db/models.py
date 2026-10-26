@@ -30,9 +30,18 @@ ROLE_USER = "user"
 ROLE_ASSISTANT = "assistant"
 ROLES = (ROLE_USER, ROLE_ASSISTANT)
 
+STATUS_PENDING = "pending"
+STATUS_INDEXING = "indexing"
 STATUS_INDEXED = "indexed"
-STATUS_SKIPPED = "skipped"
+STATUS_SKIPPED = "skipped"  # legacy rows from the synchronous (pre-queue) uploader
 STATUS_FAILED = "failed"
+DOCUMENT_STATUSES = (
+    STATUS_PENDING,
+    STATUS_INDEXING,
+    STATUS_INDEXED,
+    STATUS_SKIPPED,
+    STATUS_FAILED,
+)
 
 
 class Conversation(Base):
@@ -101,9 +110,18 @@ class Message(Base):
 
 
 class Document(Base):
-    """Registry of documents pushed through POST /api/v1/documents."""
+    """Registry of documents pushed through POST /api/v1/documents.
+
+    ``status`` is the task state machine (pending -> indexing -> indexed|failed)
+    and lives in PostgreSQL, because PostgreSQL — not the Redis queue — is the
+    source of truth for what happened to a document.
+    """
 
     __tablename__ = "documents"
+    __table_args__ = (
+        # 幂等兜底：同一份文件内容只能对应一行（NULL 不冲突，兼容旧数据）
+        Index("ix_documents_content_hash", "content_hash", unique=True),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     filename: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
@@ -111,10 +129,20 @@ class Document(Base):
     markdown_path: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     size_bytes: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     status: Mapped[str] = mapped_column(String(32), nullable=False, default=STATUS_INDEXED)
+    # 手动重试计数：>0 表示消费端失败过，达到上限后转 failed（业务死信）
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    # 任务唯一 ID（生产端生成），便于日志/队列排查与人工重放
+    task_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    # 幂等键：文件 sha256，重复上传直接返回已有 document_id
+    content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
     meta: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    # 崩溃恢复依据：indexing 且 updated_at 超过阈值即视为崩溃遗留
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid

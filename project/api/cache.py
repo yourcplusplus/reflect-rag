@@ -18,6 +18,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import random
 import time
 from typing import Any, Iterable, Sequence
 
@@ -137,9 +138,30 @@ class RedisCache:
         self._count("answer_hits")
         return payload if isinstance(payload, dict) else None
 
-    def set_answer(self, key: str, answer: str, *, ttl: int, meta: dict[str, Any] | None = None) -> bool:
+    def set_answer(
+        self,
+        key: str,
+        answer: str,
+        *,
+        ttl: int,
+        jitter: int = 0,
+        meta: dict[str, Any] | None = None,
+    ) -> bool:
+        """Store an answer, adding 0..``jitter`` seconds to its TTL.
+
+        The jitter de-synchronises entries written in the same burst (a cache
+        warm-up, a popular question answered concurrently) so they do not all
+        expire in the same second and stampede the LLM.
+        """
+        effective_ttl = ttl
+        if ttl > 0 and jitter > 0:
+            effective_ttl = ttl + random.randint(0, int(jitter))
         payload = json.dumps({"answer": answer, "meta": meta or {}}, ensure_ascii=False)
-        ok = self._call(self._client.set, key, payload, ex=ttl) if self._client is not None else None
+        ok = (
+            self._call(self._client.set, key, payload, ex=effective_ttl)
+            if self._client is not None
+            else None
+        )
         return bool(ok)
 
     def peek_answer(self, key: str) -> dict[str, Any] | None:
@@ -156,6 +178,30 @@ class RedisCache:
     def answer_ttl(self, key: str) -> int:
         ttl = self._call(self._client.ttl, key) if self._client is not None else None
         return int(ttl) if isinstance(ttl, int) else -2
+
+    # ------------------------------------------------------------ rate limit
+
+    def hit_rate_limit(self, scope: str, identity: str, *, window_seconds: int) -> int | None:
+        """Count one request in the current window; None when Redis is down.
+
+        ``INCR`` + ``EXPIRE`` run in one pipeline. The key carries the window
+        index, so counters are per-window without a cleanup job; the TTL is two
+        windows so a key is always reclaimed even if the process dies.
+        """
+        if self._client is None:
+            return None
+        window = max(1, int(window_seconds))
+        bucket = int(time.time()) // window
+        key = self._key("ratelimit", scope, identity, str(bucket))
+
+        def _increment() -> int:
+            pipe = self._client.pipeline(transaction=True)
+            pipe.incr(key)
+            pipe.expire(key, window * 2)
+            count, _ = pipe.execute()
+            return int(count)
+
+        return self._call(_increment)
 
     # ------------------------------------------------------------- embeddings
 

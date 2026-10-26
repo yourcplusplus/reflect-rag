@@ -109,14 +109,18 @@ TRACE_ENABLED=true python evals/run_eval.py --variant V3
 
 The Gradio app stays as it is; `project/api/` adds a FastAPI service layer on
 top of the same `RAGSystem` — same retrieval, same reflection, same citations —
-plus conversation persistence (PostgreSQL) and caching (Redis).
+plus conversation persistence (PostgreSQL) and caching (Redis). LangGraph
+checkpoints are persisted in the same PostgreSQL via `PostgresSaver`, so agent
+memory and pending clarification interrupts survive a restart.
 
 ```
 project/api/
-├── main.py             FastAPI app, CORS, lifespan, /health, /api/v1/cache/stats
+├── main.py             FastAPI app, lifespan (PostgresSaver), /health, cache stats
 ├── deps.py             app state + DB session / cache / RAG service dependencies
 ├── schemas.py          Pydantic request/response + SSE event models
-├── cache.py            Redis: answer cache (TTL 1h) + embedding cache
+├── cache.py            Redis: answer cache (TTL 1h + jitter) + embedding cache
+├── llm_retry.py        tenacity retry/backoff around LLM calls + fallback
+├── rate_limit.py       per-IP Redis INCR/EXPIRE limiter for POST /api/v1/chat
 ├── patches.py          runtime shims (embedding cache, Qdrant server mode)
 ├── db/                 SQLAlchemy models (conversations, messages, documents)
 ├── migrations/         Alembic revisions
@@ -141,8 +145,10 @@ Interactive docs: [http://localhost:8000/docs](http://localhost:8000/docs).
 | Endpoint | Notes |
 |---|---|
 | `POST /api/v1/chat` | SSE stream: `conversation`, `cache`, `status`, `node`, `tool_call`, `tool_result`, `tool_skipped`, `token`, `done` |
-| `POST /api/v1/documents` | Multipart upload (`.pdf`, `.md`) → chunk, embed, index |
+| `POST /api/v1/documents` | Multipart upload (`.pdf`, `.md`) → 202 + Redis List queue entry (a worker indexes it) |
+| `GET /api/v1/documents/{id}` | Task state: `pending` → `indexing` → `indexed` / `failed` (+ `attempts`, `error`) |
 | `GET /api/v1/documents` | Registered documents + `indexed_sources` (what is in the knowledge base) |
+| `GET /api/v1/queues/stats` | Queue depth (`doc:ingest:queue` / `processing`) + per-status counts |
 | `GET /api/v1/conversations` | Conversations with message counts and last-message previews |
 | `GET /api/v1/conversations/{id}/messages` | Full transcript of one conversation |
 | `GET /health` | Per-component readiness (RAG / PostgreSQL / Redis / Qdrant); 503 until the models are loaded |
@@ -152,6 +158,100 @@ Interactive docs: [http://localhost:8000/docs](http://localhost:8000/docs).
 curl -N -X POST http://localhost:8000/api/v1/chat \
   -H 'Content-Type: application/json' \
   -d '{"message": "What problem does DPR solve?"}'
+```
+
+### Async document ingestion (Redis List queue)
+
+`POST /api/v1/documents` only enqueues; a separate worker does the heavy lifting.
+
+**Producer.** For each upload the API stores the file under `uploads/`, computes
+its SHA-256 (`content_hash`), inserts a `documents` row with `status=pending`
+(a unique index on `content_hash` enforces one row per content), and `LPUSH`es
+the document id onto `doc:ingest:queue`. The response is **202** with the
+per-file outcome (`queued` / `deduplicated`); no parsing, chunking or embedding
+happens inside the request. If `LPUSH` still fails after its retries, the row is
+marked `failed` with error `投递队列失败` and the endpoint returns 503 — the API
+never reports a document as queued when it is not.
+
+**Consumer.** `worker.py` runs one loop:
+
+1. `BRPOPLPUSH doc:ingest:queue doc:ingest:processing` — atomically reserve one
+   id. This is the first half of a manual ACK: the task stays visible in
+   `processing` while it runs.
+2. Commit `status=indexing`, then convert (PDF→Markdown), chunk, embed with
+   BGE-M3 and write to Qdrant. Re-indexing deletes the document's old chunks
+   before writing the new ones.
+3. Commit `status=indexed` and `LREM` the id from `processing` — the second half
+   of the ACK.
+
+One consumer is deliberate: the embedding model is the bottleneck, and
+re-indexing a single document must be serial.
+
+**Reliability.** Redis is a transport; the state machine lives in PostgreSQL:
+`pending → indexing → indexed`, with `failed` as the dead-letter state.
+
+- **Worker crash**: the id is still in `processing`. On startup `recover()`
+  requeues `pending` ids and `indexing` ids whose `updated_at` is older than
+  `INGEST_STALE_SECONDS` (default 600s); it acks ids that are already terminal.
+  A *fresh* `indexing` row is left alone because it may belong to another live
+  worker.
+- **Retries**: a failure increments `attempts`, resets the row to `pending` and
+  requeues with exponential backoff (`INGEST_BACKOFF_SECONDS * 2^(n-1)`, base 1s
+  by default). At `INGEST_MAX_ATTEMPTS` (default 3) the row becomes `failed`;
+  re-uploading the same bytes resets it and enqueues again.
+- **Idempotency**: `content_hash` is unique, so uploading identical bytes
+  returns the existing `document_id` (`deduplicated: true`) and deletes the
+  duplicate file; concurrent uploads race safely — the losing INSERT hits the
+  unique index and returns the winner's row. The worker also acks ids that are
+  already `indexed`/`skipped` and ignores `failed` rows that exhausted attempts.
+
+> Queue durability follows Redis persistence: with `--appendonly no` a Redis
+> restart drops queued ids and leaves rows in `pending`. `docker-compose.yml`
+> therefore runs Redis with AOF enabled; do the same if you self-host it.
+
+**Why a Redis List, not Celery/RabbitMQ.** Redis is already in the stack
+(answer cache, embedding cache, rate limiting), so the queue adds no broker
+process to run or monitor. Task state stays in PostgreSQL where it is queryable
+(`GET /documents/{id}`, `GET /queues/stats`), and `BRPOPLPUSH` + explicit `LREM`
+give manual acknowledgement without a framework — we control exactly when a
+task counts as done, and stale detection is one timestamp comparison. The cost
+is no priorities, scheduling, routing or built-in retries; for one queue and one
+worker that is a small amount of explicit code instead of more infrastructure.
+
+**Switching to Celery later.** `IngestQueue.enqueue()` is the only producer
+surface, and PostgreSQL already owns the state machine, so the migration is
+contained: publish a Celery task from that method, let the task call
+`DocumentIndexer.index` (unchanged), and let `acks_late` + `visibility_timeout`
+replace the `processing` list and stale scan. Keep `content_hash` and the status
+transitions as the idempotency guard, and duplicate deliveries stay harmless.
+
+**Running the worker.** Qdrant must run as a server (`QDRANT_URL`): the embedded
+local database takes an exclusive file lock, so a second process cannot share
+it. Without `QDRANT_URL` the API returns 503 on upload and the worker exits with
+a clear error.
+
+```bash
+# dependencies: Qdrant server + PostgreSQL + Redis
+docker compose up -d qdrant postgres redis
+cd project && alembic upgrade head && cd ..     # schema (once)
+
+export DATABASE_URL=postgresql+psycopg://reflect:reflect@localhost:5432/reflect_rag
+export REDIS_URL=redis://localhost:6379/0
+export QDRANT_URL=http://localhost:6333
+python worker.py                                # from the repository root
+
+# or containerised:
+docker compose up -d worker
+```
+
+Tunables: `INGEST_MAX_ATTEMPTS` (3), `INGEST_BACKOFF_SECONDS` (1),
+`INGEST_STALE_SECONDS` (600), `INGEST_POLL_TIMEOUT` (5),
+`INGEST_ENQUEUE_RETRIES` (3).
+
+```bash
+curl -s -X POST http://localhost:8000/api/v1/documents -F 'files=@paper.pdf'   # 202, status=pending
+curl -s http://localhost:8000/api/v1/documents/<document_id>                   # poll
+curl -s http://localhost:8000/api/v1/queues/stats
 ```
 
 The first turn runs the graph and is written to `messages`; repeating the same

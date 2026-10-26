@@ -25,3 +25,12 @@ notebooks/rag_evaluation_*.png
 evals/results/traces/*.json
 evals/results/traces/index.jsonl
 evals/results/runs/
+
+# Personal notes — never publish (defense in depth)
+简历*
+求职*
+八股*
+resume*
+interview*
+.tmp_resume*
+job-prep/

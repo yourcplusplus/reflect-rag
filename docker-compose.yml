@@ -34,9 +34,12 @@ services:
 
   redis:
     image: redis:7-alpine
-    # Cache only: answers (TTL 1h) and embeddings. Losing the volume on restart
-    # just means a cold cache, so persistence is off.
-    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    # Cache (answers/embeddings) plus the ingest task queue. AOF keeps queued
+    # document ids across a restart; without it a Redis restart would strand
+    # rows in `pending`. TTLs still bound cache growth.
+    command: ["redis-server", "--appendonly", "yes", "--save", ""]
+    volumes:
+      - redis_data:/data
     ports:
       - "${REDIS_PORT:-6379}:6379"
     healthcheck:
@@ -76,7 +79,22 @@ services:
       HF_ENDPOINT: ${HF_ENDPOINT:-https://hf-mirror.com}
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       ANSWER_CACHE_TTL: ${ANSWER_CACHE_TTL:-3600}
+      ANSWER_CACHE_TTL_JITTER: ${ANSWER_CACHE_TTL_JITTER:-300}
       EMBEDDING_CACHE_TTL: ${EMBEDDING_CACHE_TTL:-604800}
+      # LangGraph state in the same PostgreSQL instance (tables created by
+      # PostgresSaver.setup() on boot; alembic keeps the business schema).
+      CHECKPOINT_BACKEND: ${CHECKPOINT_BACKEND:-postgres}
+      # Per-IP limit on POST /api/v1/chat (30 requests / 60s by default).
+      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+      RATE_LIMIT_REQUESTS: ${RATE_LIMIT_REQUESTS:-30}
+      RATE_LIMIT_WINDOW_SECONDS: ${RATE_LIMIT_WINDOW_SECONDS:-60}
+      RATE_LIMIT_TRUST_PROXY: ${RATE_LIMIT_TRUST_PROXY:-false}
+      # tenacity retry/backoff around the DeepSeek chat model.
+      LLM_RETRY_ENABLED: ${LLM_RETRY_ENABLED:-true}
+      LLM_MAX_ATTEMPTS: ${LLM_MAX_ATTEMPTS:-3}
+      LLM_RETRY_INITIAL_WAIT: ${LLM_RETRY_INITIAL_WAIT:-1}
+      LLM_RETRY_MAX_WAIT: ${LLM_RETRY_MAX_WAIT:-20}
+      LLM_RETRY_JITTER: ${LLM_RETRY_JITTER:-2}
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
       # CPU-only hosts: set ENABLE_RERANKER=false to skip the cross-encoder.
     ports:
@@ -115,8 +133,52 @@ services:
       start_period: 600s
     restart: unless-stopped
 
+  # Async document indexing consumer (Redis List: doc:ingest:queue).
+  # Same image as the API, different entry point. Kept as its own process so a
+  # worker crash cannot take the HTTP API down, and so indexing (BGE-M3 only)
+  # does not compete with chat for the same interpreter.
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    command: ["python", "worker.py"]
+    env_file:
+      - path: project/.env
+        required: false
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-reflect}:${POSTGRES_PASSWORD:-reflect}@postgres:5432/${POSTGRES_DB:-reflect_rag}
+      REDIS_URL: redis://redis:6379/0
+      # Required by worker.py: a separate process cannot share the embedded
+      # local-mode Qdrant database.
+      QDRANT_URL: http://qdrant:6333
+      HF_ENDPOINT: ${HF_ENDPOINT:-https://hf-mirror.com}
+      INGEST_MAX_ATTEMPTS: ${INGEST_MAX_ATTEMPTS:-3}
+      INGEST_BACKOFF_SECONDS: ${INGEST_BACKOFF_SECONDS:-1}
+      INGEST_STALE_SECONDS: ${INGEST_STALE_SECONDS:-600}
+      INGEST_POLL_TIMEOUT: ${INGEST_POLL_TIMEOUT:-5}
+    volumes:
+      - hf_cache:/root/.cache/huggingface
+      # Must be the same volumes as the api service: the worker writes the
+      # parent chunks and markdown the API reads.
+      - parent_store:/app/parent_store
+      - markdown_docs:/app/markdown_docs
+      - uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      # The api entrypoint runs `alembic upgrade head`; the worker loads BGE-M3
+      # (tens of seconds) before its first DB query, so migrations are done by then.
+      api:
+        condition: service_started
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  redis_data:
   qdrant_storage:
   hf_cache:
   parent_store:
