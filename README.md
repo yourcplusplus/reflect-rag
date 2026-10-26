@@ -1,5 +1,7 @@
 # ReflectRAG
 
+English | [简体中文](README.zh-CN.md)
+
 An agentic RAG system built on LangGraph, featuring three-stage hybrid retrieval, dual-track self-reflection, and an enforced citation system.
 
 This project is an architectural redesign based on [agentic-rag-for-dummies](https://github.com/GiovanniPasq/agentic-rag-for-dummies).
@@ -257,9 +259,9 @@ curl -s http://localhost:8000/api/v1/queues/stats
 The first turn runs the graph and is written to `messages`; repeating the same
 question with the same conversation history is served from Redis (TTL 1h). Each
 conversation maps to its own LangGraph checkpoint thread, so `conversation_id`
-carries agent memory across turns (the checkpointer is in-memory, so that memory
-is per-process while the transcript itself is persisted); send
-`"use_cache": false` to force a fresh run.
+carries agent memory across turns (with `CHECKPOINT_BACKEND=postgres` the
+checkpoint lives in PostgreSQL and survives a restart; otherwise it is in-memory
+for the process lifetime); send `"use_cache": false` to force a fresh run.
 
 ### Docker Compose (API + PostgreSQL + Redis + Qdrant)
 
