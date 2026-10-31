@@ -22,6 +22,27 @@ class IntentClassification(BaseModel):
     )
 
 
+class QueryUnderstanding(BaseModel):
+    """Merged intent classification + query rewriting (single LLM call).
+
+    Used when MERGED_QUERY_UNDERSTANDING is on; the rewrite half is still
+    produced for simple_faq turns even though the FAQ path searches with the
+    raw question — structured output forces both, and it keeps one schema.
+    """
+    intent: Literal["simple_faq", "single_hop", "multi_hop"] = Field(
+        description="Classified intent of the user's latest message."
+    )
+    is_clear: bool = Field(
+        description="Indicates if the user's question is clear and answerable."
+    )
+    questions: List[str] = Field(
+        description="List of rewritten, self-contained questions."
+    )
+    clarification_needed: str = Field(
+        description="Explanation if the question is unclear."
+    )
+
+
 class CritiqueVerdict(BaseModel):
     """IsSup 判定的结构化输出：列出答案中未被证据支撑的事实性声明。"""
     is_sup: bool = Field(

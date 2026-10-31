@@ -18,6 +18,7 @@ import config
 
 LAYER_BY_NODE = {
     "main.intent_router": "intent",
+    "main.understand_query": "understanding",
     "main.rewrite_query": "rewrite",
     "main.faq_answer": "generation",
     "main.aggregate_answers": "generation",
@@ -74,7 +75,9 @@ class TraceCollector:
 
     def intent_classified(self, intent: str, latency_ms: float) -> None:
         self.intent = intent
-        self._add_layer("intent", latency_ms)
+        # 延迟由 logged_node 的 node_exec 统一计入 intent/understanding 层。
+        # 这里不再 _add_layer：旧版双重计数使 by_layer.intent = 实际值 × 2
+        # （2026-10-25 修复；对比历史 run 的 intent 层数据时需除以 2）。
         self.emit("intent", "intent_classified", {"intent": intent, "latency_ms": round(latency_ms)})
 
     def node_exec(self, name: str, latency_ms: float, error: Exception | None = None) -> None:

@@ -24,6 +24,25 @@ def route_after_rewrite(state: State) -> Literal["request_clarification", "agent
             ]
     log_route("after_rewrite", decision, state)
     return decision
+
+
+def route_after_understanding(state: State) -> Literal["faq_answer", "request_clarification", "agent"]:
+    """Merged-mode routing; semantics identical to route_by_intent + route_after_rewrite.
+
+    simple_faq goes straight to the FAQ fast path regardless of clarity
+    (the unmerged graph never runs rewrite for FAQ turns).
+    """
+    if state.get("intent") == "simple_faq":
+        decision = "faq_answer"
+    elif not state.get("questionIsClear", False):
+        decision = "request_clarification"
+    else:
+        decision = [
+            Send("agent", {"question": query, "question_index": idx, "messages": []})
+            for idx, query in enumerate(state["rewrittenQuestions"])
+        ]
+    log_route("after_understanding", decision, state)
+    return decision
     
 def route_after_orchestrator_call(state: AgentState) -> Literal["tools", "fallback_response", "collect_answer"]:
     iteration = state.get("iteration_count", 0)

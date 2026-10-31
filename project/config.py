@@ -41,6 +41,16 @@ SOURCE_FILTER_MAX_PER_PARENT = int(os.environ.get("SOURCE_FILTER_MAX_PER_PARENT"
 CONTEXT_POOL_CONVERGENCE_ENABLED = os.environ.get("CONTEXT_POOL_CONVERGENCE_ENABLED", "true").lower() == "true"
 CONTEXT_POOL_TOP_K = int(os.environ.get("CONTEXT_POOL_TOP_K", "7"))
 
+# --- Latency Optimizations (flag-gated) ---
+# 默认全关：10 月的基线 run（V0-V3 / conv / ctx 系列）都不含这两个优化，
+# 消融配对必须在同样关闭的状态下跑。做"优化后"对照 run 时再显式打开。
+# SKIP_SINGLE_ANSWER_SYNTHESIS: 单个 rewritten question 时跳过 aggregate_answers
+#   的合成 LLM 调用（纯转写，省 2-4s）；引用覆盖率检查与重试不受影响。
+SKIP_SINGLE_ANSWER_SYNTHESIS = os.environ.get("SKIP_SINGLE_ANSWER_SYNTHESIS", "false").lower() == "true"
+# MERGED_QUERY_UNDERSTANDING: intent 分类 + query 改写合并为一次结构化调用，
+#   入口由两次串行 LLM（~1.5s + ~0.9s）减为一次。澄清轮保持旧行为（只改写）。
+MERGED_QUERY_UNDERSTANDING = os.environ.get("MERGED_QUERY_UNDERSTANDING", "false").lower() == "true"
+
 # --- Agent Configuration ---
 MAX_TOOL_CALLS = 8
 MAX_ITERATIONS = 10

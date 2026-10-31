@@ -1,3 +1,19 @@
+def get_query_understanding_prompt() -> str:
+    """Merged intent classification + query rewriting (MERGED_QUERY_UNDERSTANDING).
+
+    Sections 1-3 are the intent-router rules, sections 4-5 the rewrite rules;
+    one structured call returns both judgments.
+    """
+    return get_intent_router_prompt() + "\n\n" + get_rewrite_query_prompt() + """
+
+## Combined Output
+You produce ONE combined judgment in a single response:
+1. intent — classify per the intent rules above.
+2. is_clear / questions / clarification_needed — rewrite per the rewriting rules above.
+The rewrite is produced even when intent is simple_faq; it is simply unused by the FAQ fast path.
+"""
+
+
 def get_conversation_summary_prompt() -> str:
     return """## Role
 You are a compact memory manager for a retrieval-augmented chat assistant.

@@ -3,6 +3,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import ToolNode
 from functools import partial
 
+from config import MERGED_QUERY_UNDERSTANDING
 from .graph_state import State, AgentState
 from core.execution_logger import logged_node
 from .nodes import (
@@ -18,14 +19,18 @@ from .nodes import (
     rewrite_query,
     should_compress_context,
     summarize_history,
+    understand_query,
 )
-from .edges import route_after_critique, route_after_orchestrator_call, route_after_rewrite, route_by_intent
+from .edges import route_after_critique, route_after_orchestrator_call, route_after_rewrite, route_after_understanding, route_by_intent
 
-def create_agent_graph(llm, tools_list, dense_collection=None):
+def create_agent_graph(llm, tools_list, dense_collection=None, checkpointer=None):
     llm_with_tools = llm.bind_tools(tools_list)
     tool_node = ToolNode(tools_list)
 
-    checkpointer = InMemorySaver()
+    # Persistence is a deployment concern: the API passes a PostgresSaver so
+    # agent state survives restarts, while the Gradio app keeps the in-process
+    # default (one process, one session).
+    checkpointer = checkpointer if checkpointer is not None else InMemorySaver()
 
     print("Compiling agent graph...")
     agent_builder = StateGraph(AgentState)
@@ -49,18 +54,27 @@ def create_agent_graph(llm, tools_list, dense_collection=None):
 
     graph_builder = StateGraph(State)
     graph_builder.add_node("summarize_history", logged_node("main.summarize_history", partial(summarize_history, llm=llm)))
-    graph_builder.add_node("intent_router", logged_node("main.intent_router", partial(intent_router, llm=llm)))
     graph_builder.add_node("faq_answer", logged_node("main.faq_answer", partial(faq_answer, llm=llm, dense_collection=dense_collection)))
-    graph_builder.add_node("rewrite_query", logged_node("main.rewrite_query", partial(rewrite_query, llm=llm)))
     graph_builder.add_node("request_clarification", logged_node("main.request_clarification", request_clarification))
     graph_builder.add_node("agent", agent_subgraph)
     graph_builder.add_node("aggregate_answers", logged_node("main.aggregate_answers", partial(aggregate_answers, llm=llm)))
 
     graph_builder.add_edge(START, "summarize_history")
-    graph_builder.add_edge("summarize_history", "intent_router")
-    graph_builder.add_conditional_edges("intent_router", route_by_intent, {"faq_answer": "faq_answer", "rewrite_query": "rewrite_query"})
-    graph_builder.add_conditional_edges("rewrite_query", route_after_rewrite)
-    graph_builder.add_edge("request_clarification", "rewrite_query")
+
+    if MERGED_QUERY_UNDERSTANDING:
+        # 入口两次串行 LLM（intent 分类 + query 改写）合并为一次结构化调用
+        graph_builder.add_node("understand_query", logged_node("main.understand_query", partial(understand_query, llm=llm)))
+        graph_builder.add_edge("summarize_history", "understand_query")
+        graph_builder.add_conditional_edges("understand_query", route_after_understanding)
+        graph_builder.add_edge("request_clarification", "understand_query")
+    else:
+        graph_builder.add_node("intent_router", logged_node("main.intent_router", partial(intent_router, llm=llm)))
+        graph_builder.add_node("rewrite_query", logged_node("main.rewrite_query", partial(rewrite_query, llm=llm)))
+        graph_builder.add_edge("summarize_history", "intent_router")
+        graph_builder.add_conditional_edges("intent_router", route_by_intent, {"faq_answer": "faq_answer", "rewrite_query": "rewrite_query"})
+        graph_builder.add_conditional_edges("rewrite_query", route_after_rewrite)
+        graph_builder.add_edge("request_clarification", "rewrite_query")
+
     graph_builder.add_edge("faq_answer", "aggregate_answers")
     graph_builder.add_edge(["agent"], "aggregate_answers")
     graph_builder.add_edge("aggregate_answers", END)

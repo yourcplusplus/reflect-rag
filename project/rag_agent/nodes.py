@@ -6,13 +6,13 @@ from langchain_core.messages import SystemMessage, HumanMessage, RemoveMessage, 
 from langchain_core.runnables import RunnableConfig
 from langgraph.types import Command
 from .graph_state import State, AgentState
-from .schemas import IntentClassification, QueryAnalysis
+from .schemas import IntentClassification, QueryAnalysis, QueryUnderstanding
 from .prompts import *
 from utils import estimate_context_tokens
 from core.execution_logger import log_error
 from core.trace import collector_from_config
 from .tools import get_shared_reranker, rerank_top1_for
-from config import BASE_TOKEN_THRESHOLD, CHILD_CHUNK_SEPARATOR, CONTEXT_POOL_CONVERGENCE_ENABLED, CONTEXT_POOL_TOP_K, DEFAULT_RETRIEVAL_K, ENABLE_CRITIQUE, MAIN_HISTORY_MESSAGES_TO_KEEP, SKIPPED_TOOL_MESSAGE, TOKEN_GROWTH_FACTOR
+from config import BASE_TOKEN_THRESHOLD, CHILD_CHUNK_SEPARATOR, CONTEXT_POOL_CONVERGENCE_ENABLED, CONTEXT_POOL_TOP_K, DEFAULT_RETRIEVAL_K, ENABLE_CRITIQUE, MAIN_HISTORY_MESSAGES_TO_KEEP, MERGED_QUERY_UNDERSTANDING, SKIPPED_TOOL_MESSAGE, SKIP_SINGLE_ANSWER_SYNTHESIS, TOKEN_GROWTH_FACTOR
 
 if MAIN_HISTORY_MESSAGES_TO_KEEP < 2:
     raise ValueError("MAIN_HISTORY_MESSAGES_TO_KEEP must be at least 2.")
@@ -183,6 +183,76 @@ def rewrite_query(state: State, llm, config: RunnableConfig = None):
 
 def request_clarification(state: State, config: RunnableConfig = None):
     return {}
+
+
+def understand_query(state: State, llm, config: RunnableConfig = None):
+    """Merged intent classification + query rewriting in ONE LLM call.
+
+    Replaces the intent_router -> rewrite_query pair when
+    MERGED_QUERY_UNDERSTANDING is on (~0.7s saved per non-FAQ turn).
+    Clarification follow-ups keep the previous intent (a short reply like
+    "5.2.3" would be misclassified), so they delegate to rewrite_query —
+    one call either way, identical behavior to the unmerged graph.
+    Routing semantics match the unmerged graph exactly: simple_faq goes to
+    the FAQ fast path with the raw question (rewrite output unused), unclear
+    non-FAQ queries interrupt for clarification.
+    """
+    if state.get("pendingQuery", "").strip():
+        updates = rewrite_query(state, llm, config)
+        updates["intent"] = state.get("intent") or DEFAULT_INTENT
+        return updates
+
+    last_message = state["messages"][-1]
+    current_query = str(last_message.content).strip()
+
+    context_parts = []
+    summary = state.get("conversation_summary", "").strip()
+    if summary:
+        context_parts.append(f"Conversation Summary:\n{summary}")
+    recent_messages = _recent_conversation(state["messages"])
+    if recent_messages:
+        context_parts.append(f"Recent Conversation:\n{_format_conversation(recent_messages)}")
+    context_parts.append(f"User Query:\n{current_query}")
+
+    collector = collector_from_config(config)
+    t0 = time.perf_counter()
+    response = llm.with_structured_output(QueryUnderstanding).invoke([
+        SystemMessage(content=get_query_understanding_prompt()),
+        HumanMessage(content="\n\n".join(context_parts)),
+    ])
+    intent = response.intent if response and response.intent in VALID_INTENTS else DEFAULT_INTENT
+    print(f"[INTENT] {intent}")
+    if collector:
+        collector.intent_classified(intent, (time.perf_counter() - t0) * 1000)
+
+    updates: dict = {"intent": intent}
+    if response and response.questions and response.is_clear:
+        updates.update({
+            "questionIsClear": True,
+            "originalQuery": current_query,
+            "pendingQuery": "",
+            "pendingClarifications": [],
+            "rewrittenQuestions": response.questions,
+        })
+        if collector:
+            collector.emit("rewrite", "rewritten", {
+                "original": current_query, "rewritten": response.questions, "is_clear": True})
+        return updates
+
+    clarification = str(getattr(response, "clarification_needed", "") or "").strip()
+    clarification = clarification if len(clarification) > 10 else "I need more information to understand your question."
+    updates.update({
+        "questionIsClear": False,
+        "originalQuery": "",
+        "pendingQuery": current_query,
+        "pendingClarifications": [],
+        "rewrittenQuestions": [],
+        "messages": [AIMessage(content=clarification, name="clarification")],
+    })
+    if collector:
+        collector.emit("rewrite", "rewritten", {
+            "original": current_query, "rewritten": [], "is_clear": False})
+    return updates
 
 # --- Agent Nodes ---
 def orchestrator(state: AgentState, llm_with_tools, config: RunnableConfig = None):
@@ -646,9 +716,14 @@ def aggregate_answers(state: State, llm, config: RunnableConfig = None):
     for i, ans in enumerate(sorted_answers, start=1):
         formatted_answers += (f"\nRetrieved response {i}:\n"f"{ans['answer']}\n")
 
-    user_message = HumanMessage(content=f"""Original user question: {state.get("originalQuery", "")}\nRetrieved answers:{formatted_answers}""")
-    synthesis_response = llm.invoke([SystemMessage(content=get_aggregation_prompt()), user_message])
-    answer = synthesis_response.content
+    if len(sorted_answers) == 1 and SKIP_SINGLE_ANSWER_SYNTHESIS:
+        # 单答案直通：合成调用对单个答案是纯转写，省一次 2-4s 的 LLM 调用。
+        # 引用覆盖率检查与重试在下方照常执行，强制引用机制不受影响。
+        answer = sorted_answers[0]["answer"]
+    else:
+        user_message = HumanMessage(content=f"""Original user question: {state.get("originalQuery", "")}\nRetrieved answers:{formatted_answers}""")
+        synthesis_response = llm.invoke([SystemMessage(content=get_aggregation_prompt()), user_message])
+        answer = synthesis_response.content
 
     # 优化 1：引用覆盖率后处理——>30% 事实句无 [chunk_id] 时重试一次，仍不达标加标注
     _refusal = any(h in answer.lower() for h in
