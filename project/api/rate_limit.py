@@ -1,10 +1,10 @@
 """Per-IP rate limiting for the chat endpoint, backed by Redis.
 
-The counter is a fixed window: the Redis key embeds ``int(time() / window)``,
-so a new key starts every window and the old one expires on its own. Each
-request does ``INCR`` + ``EXPIRE`` in one pipeline — the two commands the
-resume/deployment story calls for — and the key gets a TTL of two windows so a
-crashed process can never leave a counter behind forever.
+The limiter is a sliding-window counter: the window is split into
+``subwindows`` equal buckets, every request INCRs the current bucket, and the
+same transaction pipeline MGETs the last ``subwindows`` buckets to sum the
+trailing window. Buckets carry a two-window TTL, so old counters expire without
+a cleanup job. ``subwindows=1`` degenerates to a classic fixed window.
 
 The middleware fails open. Redis is an optimisation elsewhere in the API
 (answer/embedding cache) and it must stay one here: if it is down, requests are
@@ -18,7 +18,6 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import time
 from typing import Any, Awaitable, Callable
 
 logger = logging.getLogger("api.ratelimit")
@@ -37,6 +36,7 @@ class RedisRateLimitMiddleware:
         *,
         limit: int = 30,
         window_seconds: int = 60,
+        subwindows: int = 10,
         enabled: bool = True,
         path: str = "/api/v1/chat",
         trust_proxy: bool = False,
@@ -44,6 +44,7 @@ class RedisRateLimitMiddleware:
         self.app = app
         self.limit = max(1, int(limit))
         self.window_seconds = max(1, int(window_seconds))
+        self.subwindows = max(1, min(int(subwindows), self.window_seconds))
         self.enabled = bool(enabled)
         self.path = path.rstrip("/") or "/"
         self.trust_proxy = bool(trust_proxy)
@@ -64,6 +65,7 @@ class RedisRateLimitMiddleware:
             "chat",
             identity,
             window_seconds=self.window_seconds,
+            subwindows=self.subwindows,
         )
         if count is None:  # Redis down: fail open
             await self.app(scope, receive, send)
@@ -71,7 +73,9 @@ class RedisRateLimitMiddleware:
 
         remaining = max(0, self.limit - count)
         if count > self.limit:
-            retry_after = self.window_seconds - int(time.time()) % self.window_seconds
+            # Sliding window: waiting one full window guarantees every request
+            # counted before "now" has left the trailing sum.
+            retry_after = self.window_seconds
             logger.warning(
                 "Rate limit exceeded for %s (%s requests in %ss, limit %s)",
                 identity,

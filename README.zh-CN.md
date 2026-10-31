@@ -117,8 +117,9 @@ project/api/
 ├── deps.py              应用状态 + 数据库会话 / 缓存 / RAG 服务依赖
 ├── schemas.py           Pydantic 请求/响应 + SSE 事件模型
 ├── cache.py             Redis：答案缓存（TTL 1h + 抖动）+ 向量缓存
+├── concurrency.py       进程内 singleflight（相同 cache key 只生成一次）
 ├── llm_retry.py         基于 tenacity 的 LLM 重试/退避 + 降级
-├── rate_limit.py        按 IP 的 Redis INCR/EXPIRE 限流（POST /api/v1/chat）
+├── rate_limit.py        按 IP 的 Redis INCR 滑动窗口限流（POST /api/v1/chat）
 ├── patches.py           运行时 shim（向量缓存、Qdrant 服务端模式）
 ├── db/                  SQLAlchemy 模型（conversations、messages、documents）
 ├── migrations/          Alembic 迁移
@@ -207,7 +208,7 @@ curl -s http://localhost:8000/api/v1/documents/<document_id>                   #
 curl -s http://localhost:8000/api/v1/queues/stats
 ```
 
-第一轮对话会真正执行图并写入 `messages`；在相同会话历史下重复同一个问题会直接由 Redis 返回（TTL 1h）。每个会话对应独立的 LangGraph checkpoint 线程，因此 `conversation_id` 让 Agent 记忆跨轮次延续（`CHECKPOINT_BACKEND=postgres` 时 checkpoint 持久化在 PostgreSQL，否则仅在进程内存中存活）；发送 `"use_cache": false` 可强制重新执行。
+第一轮对话会真正执行图并写入 `messages`；在相同会话历史下重复同一个问题会直接由 Redis 返回（TTL 1h）。并发相同问题时，进程内 singleflight 只放行一个请求生成，其余等待后二次查缓存复用，避免击穿。每个会话对应独立的 LangGraph checkpoint 线程，因此 `conversation_id` 让 Agent 记忆跨轮次延续（`CHECKPOINT_BACKEND=postgres` 时 checkpoint 持久化在 PostgreSQL，否则仅在进程内存中存活）；发送 `"use_cache": false` 可强制重新执行。
 
 ### Docker Compose（API + PostgreSQL + Redis + Qdrant）
 

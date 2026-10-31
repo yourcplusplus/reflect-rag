@@ -5,7 +5,8 @@ Flow of one turn:
 1. resolve (or create) the conversation and persist the user message;
 2. look the question up in Redis — an identical question with an identical
    conversation history is replayed from cache (TTL 1h) instead of re-running
-   the graph;
+   the graph. On a miss, a per-key singleflight lock lets one request generate
+   while duplicates wait and then re-read the answer it cached;
 3. otherwise stream the LangGraph run: node progress, tool calls, answer tokens;
 4. persist the assistant message (with latency, intent, cache flag) and store
    the answer in Redis.
@@ -163,176 +164,207 @@ async def chat(
             {"conversation_id": str(conversation_id), "created": created},
         )
 
-        # --- 2. cache lookup ------------------------------------------
-        if cache_enabled:
+        async def lookup_cached() -> dict | None:
             try:
-                cached_payload = await asyncio.to_thread(cache.get_answer, cache_key)
+                return await asyncio.to_thread(cache.get_answer, cache_key)
             except Exception as exc:  # never fail a turn because of the cache
                 logger.warning("Answer cache lookup failed: %s", exc)
-                cached_payload = None
-            if cached_payload and cached_payload.get("answer"):
-                answer = str(cached_payload["answer"])
-                meta = cached_payload.get("meta") or {}
-                ttl = await asyncio.to_thread(cache.answer_ttl, cache_key)
-                yield sse("cache", {"hit": True, "ttl_seconds": ttl})
-                for offset in range(0, len(answer), CACHED_REPLAY_CHARS):
-                    yield sse("token", {"text": answer[offset : offset + CACHED_REPLAY_CHARS]})
-                latency_ms = round((time.perf_counter() - started) * 1000)
-                message_id = await asyncio.to_thread(
-                    _persist_assistant,
-                    conversation_id,
-                    answer,
-                    cached=True,
-                    latency_ms=latency_ms,
-                    intent=meta.get("intent"),
-                    error=None,
-                    meta={"cache_key": cache_key, "source": "cache"},
-                )
-                yield sse(
-                    "done",
-                    {
-                        "conversation_id": str(conversation_id),
-                        "message_id": message_id,
-                        "cached": True,
-                        "latency_ms": latency_ms,
-                        "intent": meta.get("intent"),
-                        "chars": len(answer),
-                        "outcome": "ok",
-                        "tool_calls": 0,
-                    },
-                )
-                return
-            yield sse("cache", {"hit": False})
+                return None
 
-        # --- 3. wait for the RAG models, then stream the turn ----------
-        if not service.ready and not service.initializing:
-            # init is done but failed (initializing False + not ready)
-            yield sse("error", {"detail": service.init_error or "RAG system is not ready"})
+        async def replay_cached(cached_payload: dict):
+            answer = str(cached_payload["answer"])
+            meta = cached_payload.get("meta") or {}
+            ttl = await asyncio.to_thread(cache.answer_ttl, cache_key)
+            yield sse("cache", {"hit": True, "ttl_seconds": ttl})
+            for offset in range(0, len(answer), CACHED_REPLAY_CHARS):
+                yield sse("token", {"text": answer[offset : offset + CACHED_REPLAY_CHARS]})
+            latency_ms = round((time.perf_counter() - started) * 1000)
+            message_id = await asyncio.to_thread(
+                _persist_assistant,
+                conversation_id,
+                answer,
+                cached=True,
+                latency_ms=latency_ms,
+                intent=meta.get("intent"),
+                error=None,
+                meta={"cache_key": cache_key, "source": "cache"},
+            )
             yield sse(
                 "done",
                 {
                     "conversation_id": str(conversation_id),
-                    "message_id": None,
-                    "cached": False,
-                    "latency_ms": round((time.perf_counter() - started) * 1000),
-                    "intent": None,
-                    "chars": 0,
-                    "outcome": "error",
+                    "message_id": message_id,
+                    "cached": True,
+                    "latency_ms": latency_ms,
+                    "intent": meta.get("intent"),
+                    "chars": len(answer),
+                    "outcome": "ok",
                     "tool_calls": 0,
                 },
             )
-            return
 
-        waited = 0.0
-        while service.initializing:
-            if waited >= state.settings.rag_ready_timeout:
+        async def stream_fresh():
+            # --- 3. wait for the RAG models, then stream the turn ------
+            if not service.ready and not service.initializing:
+                # init is done but failed (initializing False + not ready)
+                yield sse("error", {"detail": service.init_error or "RAG system is not ready"})
                 yield sse(
-                    "error",
+                    "done",
                     {
-                        "detail": (
-                            "RAG system is still initializing after "
-                            f"{state.settings.rag_ready_timeout}s; retry later."
-                        )
+                        "conversation_id": str(conversation_id),
+                        "message_id": None,
+                        "cached": False,
+                        "latency_ms": round((time.perf_counter() - started) * 1000),
+                        "intent": None,
+                        "chars": 0,
+                        "outcome": "error",
+                        "tool_calls": 0,
                     },
                 )
                 return
-            yield sse(
-                "status",
-                {"detail": "loading BGE-M3 / reranker / agent graph", "waited_s": round(waited, 1)},
-            )
-            await asyncio.sleep(3)
-            waited += 3
 
-        if service.busy:
-            yield sse(
-                "status",
-                {"detail": "queued behind an in-flight request", "waited_s": 0.0},
+            waited = 0.0
+            while service.initializing:
+                if waited >= state.settings.rag_ready_timeout:
+                    yield sse(
+                        "error",
+                        {
+                            "detail": (
+                                "RAG system is still initializing after "
+                                f"{state.settings.rag_ready_timeout}s; retry later."
+                            )
+                        },
+                    )
+                    return
+                yield sse(
+                    "status",
+                    {
+                        "detail": "loading BGE-M3 / reranker / agent graph",
+                        "waited_s": round(waited, 1),
+                    },
+                )
+                await asyncio.sleep(3)
+                waited += 3
+
+            if service.busy:
+                yield sse(
+                    "status",
+                    {"detail": "queued behind an in-flight request", "waited_s": 0.0},
+                )
+            if await request.is_disconnected():
+                return
+
+            cancelled = threading.Event()
+            answer_parts: list[str] = []
+            final: dict | None = None
+            error_detail: str | None = None
+            tool_calls = 0
+
+            try:
+                async for event in iter_blocking(
+                    lambda: service.stream_answer(payload.message, thread_id=conversation_id),
+                    cancelled,
+                ):
+                    event_type = event.get("type")
+                    if event_type == "token":
+                        answer_parts.append(event["text"])
+                        yield sse("token", {"text": event["text"]})
+                    elif event_type == "node":
+                        yield sse("node", {"node": event["node"], "text": event["text"]})
+                    elif event_type == "tool_call":
+                        tool_calls += 1
+                        yield sse(
+                            "tool_call",
+                            {"id": event["id"], "name": event["name"], "args": event["args"]},
+                        )
+                    elif event_type == "tool_result":
+                        yield sse(
+                            "tool_result",
+                            {
+                                "id": event["id"],
+                                "name": event["name"],
+                                "content": event["content"],
+                            },
+                        )
+                    elif event_type == "tool_skipped":
+                        yield sse("tool_skipped", {"id": event["id"], "name": event["name"]})
+                    elif event_type == "error":
+                        error_detail = event["detail"]
+                        yield sse("error", {"detail": event["detail"]})
+                    elif event_type == "final":
+                        final = event
+            except asyncio.CancelledError:  # client hung up mid-answer
+                cancelled.set()
+                raise
+            finally:
+                cancelled.set()
+
+            answer = (final or {}).get("answer") or "".join(answer_parts).strip()
+            intent = (final or {}).get("intent")
+            outcome = (final or {}).get("outcome") or ("error" if error_detail else "ok")
+            latency_ms = round((time.perf_counter() - started) * 1000)
+
+            # --- 4. persist + cache -----------------------------------
+            message_id = await asyncio.to_thread(
+                _persist_assistant,
+                conversation_id,
+                answer,
+                cached=False,
+                latency_ms=latency_ms,
+                intent=intent,
+                error=error_detail,
+                meta={"tool_calls": tool_calls, "cache_key": cache_key, "outcome": outcome},
             )
-        if await request.is_disconnected():
+            if answer and error_detail is None and cache_enabled:
+                try:
+                    await asyncio.to_thread(
+                        cache.set_answer,
+                        cache_key,
+                        answer,
+                        ttl=state.settings.answer_cache_ttl,
+                        jitter=state.settings.answer_cache_ttl_jitter,
+                        meta={"intent": intent, "latency_ms": latency_ms},
+                    )
+                except Exception as exc:  # cache writes must never break a turn
+                    logger.warning("Answer cache write failed: %s", exc)
+
+            yield sse(
+                "done",
+                {
+                    "conversation_id": str(conversation_id),
+                    "message_id": message_id,
+                    "cached": False,
+                    "latency_ms": latency_ms,
+                    "intent": intent,
+                    "chars": len(answer),
+                    "outcome": outcome,
+                    "tool_calls": tool_calls,
+                },
+            )
+
+        # --- 2. cache lookup + singleflight ---------------------------
+        if cache_enabled:
+            cached_payload = await lookup_cached()
+            if cached_payload and cached_payload.get("answer"):
+                async for event in replay_cached(cached_payload):
+                    yield event
+                return
+
+            # 防击穿：同一个 cache key 的并发请求只让一个 leader 生成。其余
+            # 请求在进程内锁上等待，leader 释放前已写入答案，它们二次查缓存
+            # 直接复用，不会再打一遍 RAG 图。
+            async with state.generation_locks.hold(cache_key):
+                cached_payload = await lookup_cached()
+                if cached_payload and cached_payload.get("answer"):
+                    async for event in replay_cached(cached_payload):
+                        yield event
+                    return
+                yield sse("cache", {"hit": False})
+                async for event in stream_fresh():
+                    yield event
             return
 
-        cancelled = threading.Event()
-        answer_parts: list[str] = []
-        final: dict | None = None
-        error_detail: str | None = None
-        tool_calls = 0
-
-        try:
-            async for event in iter_blocking(
-                lambda: service.stream_answer(payload.message, thread_id=conversation_id),
-                cancelled,
-            ):
-                event_type = event.get("type")
-                if event_type == "token":
-                    answer_parts.append(event["text"])
-                    yield sse("token", {"text": event["text"]})
-                elif event_type == "node":
-                    yield sse("node", {"node": event["node"], "text": event["text"]})
-                elif event_type == "tool_call":
-                    tool_calls += 1
-                    yield sse(
-                        "tool_call",
-                        {"id": event["id"], "name": event["name"], "args": event["args"]},
-                    )
-                elif event_type == "tool_result":
-                    yield sse(
-                        "tool_result",
-                        {"id": event["id"], "name": event["name"], "content": event["content"]},
-                    )
-                elif event_type == "tool_skipped":
-                    yield sse("tool_skipped", {"id": event["id"], "name": event["name"]})
-                elif event_type == "error":
-                    error_detail = event["detail"]
-                    yield sse("error", {"detail": event["detail"]})
-                elif event_type == "final":
-                    final = event
-        except asyncio.CancelledError:  # client hung up mid-answer
-            cancelled.set()
-            raise
-        finally:
-            cancelled.set()
-
-        answer = (final or {}).get("answer") or "".join(answer_parts).strip()
-        intent = (final or {}).get("intent")
-        outcome = (final or {}).get("outcome") or ("error" if error_detail else "ok")
-        latency_ms = round((time.perf_counter() - started) * 1000)
-
-        # --- 4. persist + cache ---------------------------------------
-        message_id = await asyncio.to_thread(
-            _persist_assistant,
-            conversation_id,
-            answer,
-            cached=False,
-            latency_ms=latency_ms,
-            intent=intent,
-            error=error_detail,
-            meta={"tool_calls": tool_calls, "cache_key": cache_key, "outcome": outcome},
-        )
-        if answer and error_detail is None and cache_enabled:
-            try:
-                await asyncio.to_thread(
-                    cache.set_answer,
-                    cache_key,
-                    answer,
-                    ttl=state.settings.answer_cache_ttl,
-                    jitter=state.settings.answer_cache_ttl_jitter,
-                    meta={"intent": intent, "latency_ms": latency_ms},
-                )
-            except Exception as exc:  # cache writes must never break a turn
-                logger.warning("Answer cache write failed: %s", exc)
-
-        yield sse(
-            "done",
-            {
-                "conversation_id": str(conversation_id),
-                "message_id": message_id,
-                "cached": False,
-                "latency_ms": latency_ms,
-                "intent": intent,
-                "chars": len(answer),
-                "outcome": outcome,
-                "tool_calls": tool_calls,
-            },
-        )
+        async for event in stream_fresh():
+            yield event
 
     return StreamingResponse(event_stream(), media_type="text/event-stream", headers=SSE_HEADERS)

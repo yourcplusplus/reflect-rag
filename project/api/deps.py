@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from api import patches
 from api.cache import RedisCache
+from api.concurrency import KeyedLocks
 from api.db.base import SessionLocal
 from api.ingest.queue import IngestQueue
 from api.services.rag_service import RagService
@@ -46,6 +47,9 @@ class AppState:
         self.service = RagService(checkpointer=checkpointer)
         # Producer side of the async ingest queue (the consumer runs in worker.py).
         self.ingest_queue = IngestQueue()
+        # Per-answer-key singleflight: duplicate cache misses wait for the
+        # leader and then re-read the answer it cached (see routers/chat.py).
+        self.generation_locks = KeyedLocks()
         self.patches: dict = {}
         self.init_task: asyncio.Task | None = None
 

@@ -107,6 +107,10 @@ class Settings:
         self.rate_limit_enabled = _flag("RATE_LIMIT_ENABLED", "true")
         self.rate_limit_requests = max(1, _int("RATE_LIMIT_REQUESTS", 30))
         self.rate_limit_window_seconds = max(1, _int("RATE_LIMIT_WINDOW_SECONDS", 60))
+        # The window is split into this many buckets; each request INCRs the
+        # current bucket and sums the last N, so the limit slides instead of
+        # resetting at a fixed boundary. 1 reproduces a classic fixed window.
+        self.rate_limit_subwindows = max(1, _int("RATE_LIMIT_SUBWINDOWS", 10))
         # Only enable behind a reverse proxy you control: X-Forwarded-For is
         # client-controlled otherwise and would make the limit trivial to spoof.
         self.rate_limit_trust_proxy = _flag("RATE_LIMIT_TRUST_PROXY")

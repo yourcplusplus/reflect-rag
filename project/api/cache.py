@@ -181,27 +181,42 @@ class RedisCache:
 
     # ------------------------------------------------------------ rate limit
 
-    def hit_rate_limit(self, scope: str, identity: str, *, window_seconds: int) -> int | None:
-        """Count one request in the current window; None when Redis is down.
+    def hit_rate_limit(
+        self,
+        scope: str,
+        identity: str,
+        *,
+        window_seconds: int,
+        subwindows: int = 10,
+    ) -> int | None:
+        """Count one request in a sliding window; None when Redis is down.
 
-        ``INCR`` + ``EXPIRE`` run in one pipeline. The key carries the window
-        index, so counters are per-window without a cleanup job; the TTL is two
-        windows so a key is always reclaimed even if the process dies.
+        The window is split into ``subwindows`` equal buckets. A request INCRs
+        the current bucket, and the same transaction pipeline MGETs the last
+        ``subwindows`` buckets, so the returned number is a trailing-window sum
+        accurate to one bucket instead of a counter that resets at a fixed
+        boundary. Each bucket expires after two windows, so there is no cleanup
+        job; ``subwindows=1`` degenerates to a classic fixed window.
         """
         if self._client is None:
             return None
         window = max(1, int(window_seconds))
-        bucket = int(time.time()) // window
-        key = self._key("ratelimit", scope, identity, str(bucket))
+        buckets = max(1, min(int(subwindows), window))  # at most one bucket per second
+        current = int(time.time()) * buckets // window
+        keys = [
+            self._key("ratelimit", scope, identity, str(buckets), str(current - offset))
+            for offset in range(buckets - 1, -1, -1)
+        ]
 
-        def _increment() -> int:
+        def _count() -> int:
             pipe = self._client.pipeline(transaction=True)
-            pipe.incr(key)
-            pipe.expire(key, window * 2)
-            count, _ = pipe.execute()
-            return int(count)
+            pipe.incr(keys[-1])
+            pipe.expire(keys[-1], window * 2)
+            pipe.mget(keys)
+            _, _, values = pipe.execute()
+            return sum(int(value or 0) for value in values)
 
-        return self._call(_increment)
+        return self._call(_count)
 
     # ------------------------------------------------------------- embeddings
 

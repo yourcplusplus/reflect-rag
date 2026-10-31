@@ -141,6 +141,7 @@ app.add_middleware(
     RedisRateLimitMiddleware,
     limit=settings.rate_limit_requests,
     window_seconds=settings.rate_limit_window_seconds,
+    subwindows=settings.rate_limit_subwindows,
     enabled=settings.rate_limit_enabled,
     trust_proxy=settings.rate_limit_trust_proxy,
 )

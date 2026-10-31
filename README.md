@@ -257,11 +257,13 @@ curl -s http://localhost:8000/api/v1/queues/stats
 ```
 
 The first turn runs the graph and is written to `messages`; repeating the same
-question with the same conversation history is served from Redis (TTL 1h). Each
-conversation maps to its own LangGraph checkpoint thread, so `conversation_id`
-carries agent memory across turns (with `CHECKPOINT_BACKEND=postgres` the
-checkpoint lives in PostgreSQL and survives a restart; otherwise it is in-memory
-for the process lifetime); send `"use_cache": false` to force a fresh run.
+question with the same conversation history is served from Redis (TTL 1h).
+Concurrent duplicates are coalesced by a process-local singleflight: one leader
+generates, the rest wait and re-read the cached answer. Each conversation maps
+to its own LangGraph checkpoint thread, so `conversation_id` carries agent
+memory across turns (with `CHECKPOINT_BACKEND=postgres` the checkpoint lives in
+PostgreSQL and survives a restart; otherwise it is in-memory for the process
+lifetime); send `"use_cache": false` to force a fresh run.
 
 ### Docker Compose (API + PostgreSQL + Redis + Qdrant)
 

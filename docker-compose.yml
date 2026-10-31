@@ -84,10 +84,11 @@ services:
       # LangGraph state in the same PostgreSQL instance (tables created by
       # PostgresSaver.setup() on boot; alembic keeps the business schema).
       CHECKPOINT_BACKEND: ${CHECKPOINT_BACKEND:-postgres}
-      # Per-IP limit on POST /api/v1/chat (30 requests / 60s by default).
+      # Per-IP limit on POST /api/v1/chat (30 requests / 60s sliding window).
       RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
       RATE_LIMIT_REQUESTS: ${RATE_LIMIT_REQUESTS:-30}
       RATE_LIMIT_WINDOW_SECONDS: ${RATE_LIMIT_WINDOW_SECONDS:-60}
+      RATE_LIMIT_SUBWINDOWS: ${RATE_LIMIT_SUBWINDOWS:-10}
       RATE_LIMIT_TRUST_PROXY: ${RATE_LIMIT_TRUST_PROXY:-false}
       # tenacity retry/backoff around the DeepSeek chat model.
       LLM_RETRY_ENABLED: ${LLM_RETRY_ENABLED:-true}
