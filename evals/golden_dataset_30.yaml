@@ -1,0 +1,794 @@
+meta:
+  name: golden_dataset_30
+  description: 固化 30 题金标集：与 V3-conv/20261010_143849 及 V3/20261007_175543 完全同题同序（25 spf + 5 cpc）。用于所有 30 题配对消融（V2-30 / V3-30 复跑 / 优化后 V4），保证跨 run 可比性。
+  source: golden_dataset.yaml (100 items, all approved), frozen 2026-10-25
+  paired_runs:
+  - V3-conv/20261010_143849
+  - V3-ctxA/20261009_204823
+  - V3/20261007_175543
+items:
+- _key:
+  - single_paper_factual
+  - '2401.15884'
+  question: According to the passage, why do large language models inevitably manifest hallucinations?
+  ground_truth: LLMs inevitably manifest hallucinations due to their struggle with factual errors and their inability to secure the accuracy of generated texts solely by the parametric knowledge they encapsulate.
+    This is illustrated by examples where a low-quality retriever introduces irrelevant information that impedes generators from acquiring accurate knowledge.
+  gold_evidence:
+  - Nevertheless, LLMs inevitably manifest hallucinations (Ji et al., 2023) due to their struggle with factual errors (Mallen et al., 2023; Min et al., 2023) and inability to secure the accuracy of generated
+    texts solely by the parametric knowledge they encapsulate (Zhang et al., 2023b; Muhlgay et al., 2023).
+  provenance: extractive
+  source_papers:
+  - '2401.15884'
+  source_sections:
+  - 2401.15884#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: The evidence states the two causes (struggle with factual errors and inability to secure accuracy from parametric knowledge alone), but it does not contain the illustrative example about a low-quality
+      retriever introducing irrelevant information, so that part of the ground truth is unsupported.
+  query_type: single_paper_factual
+  id: spf-001
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - single_paper_factual
+  - '2208.03299'
+  question: Atlas 在 Natural Questions 上仅用 64 个示例达到了多少准确率？
+  ground_truth: Atlas 在 Natural Questions 上仅用 64 个示例就达到了超过 42% 的准确率。它比一个 540B 参数的模型高出 3%，尽管其参数量少了 50 倍。
+  gold_evidence:
+  - Notably, Atlas reaches over 42% accuracy on Natural Questions using only 64 examples, outperforming a 540B parameters model by 3% despite having 50x fewer parameters.
+  provenance: extractive
+  source_papers:
+  - '2208.03299'
+  source_sections:
+  - 2208.03299#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据明确说明 Atlas 仅用 64 个示例在 Natural Questions 上达到超过 42% 的准确率，并比 540B 参数模型高 3%，尽管参数量少 50 倍，完全支撑该 ground truth。
+  query_type: single_paper_factual
+  id: spf-002
+  review_status: approved
+  notes: ''
+- _key:
+  - single_paper_factual
+  - '2212.03533'
+  question: E5 是什么？它是如何训练的？
+  ground_truth: E5 是一个在广泛任务上迁移效果良好的最先进文本嵌入模型家族。它采用对比学习方式训练，弱监督信号来自作者整理的大规模文本对数据集 CCPairs。E5 可直接作为通用嵌入模型用于检索、聚类和分类等需要文本单向量表示的任务。
+  gold_evidence:
+  - This paper presents E5<sup>1</sup> , a family of state-of-the-art text embeddings that transfer well to a wide range of tasks. The model is trained in a contrastive manner with weak supervision signals
+    from our curated large-scale text pair dataset (called CCPairs). E5 can be readily used as a general-purpose embedding model for any tasks requiring a single-vector representation of texts such as retrieval,
+    clustering, and classification, achieving strong performance in both zero-shot and fine-tuned settings.
+  provenance: extractive
+  source_papers:
+  - '2212.03533'
+  source_sections:
+  - 2212.03533#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据完整覆盖了 ground truth 中 E5 的定义、对比学习训练方式、CCPairs 弱监督信号来源以及通用嵌入模型用途等全部事实。
+  query_type: single_paper_factual
+  id: spf-003
+  review_status: approved
+  notes: ''
+- _key:
+  - single_paper_factual
+  - '2410.05779'
+  question: LightRAG 通过什么方式提升信息检索的效率与理解能力？
+  ground_truth: LightRAG 通过整合基于图的索引方法来提升信息检索的效率与理解能力。它利用一个全面的知识图谱来促进快速且相关的文档检索，从而能够更深入地理解复杂查询。其双层检索范式可以同时提取具体信息和抽象信息，以满足多样化的用户需求。
+  gold_evidence:
+  - This work introduces an advancement in Retrieval-Augmented Generation (RAG) through the integration of a graph-based indexing approach that enhances both efficiency and comprehension in information
+    retrieval. LightRAG utilizes a comprehensive knowledge graph to facilitate rapid and relevant document retrieval, enabling a deeper understanding of complex queries. Its dual-level retrieval paradigm
+    allows for the extraction of both specific and abstract information, catering to diverse user needs.
+  provenance: extractive
+  source_papers:
+  - '2410.05779'
+  source_sections:
+  - 2410.05779#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据逐句对应地说明了基于图的索引方法、全面知识图谱、双层检索范式及满足多样化需求，完整支撑了声明中的全部事实。
+  query_type: single_paper_factual
+  id: spf-004
+  review_status: approved
+  notes: ''
+- _key:
+  - single_paper_factual
+  - '2402.03216'
+  question: M3-Embedding 支持多少种工作语言的语义检索？
+  ground_truth: M3-Embedding 为超过 100 种工作语言的语义检索提供统一支持。它同时还能完成稠密检索、多向量检索和稀疏检索三种常见检索功能。
+  gold_evidence:
+  - It provides a uniform support for the semantic retrieval of more than 100 working languages.
+  provenance: extractive
+  source_papers:
+  - '2402.03216'
+  source_sections:
+  - 2402.03216#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: 证据仅支持"超过100种工作语言的语义检索统一支持"，未提及稠密检索、多向量检索和稀疏检索三种功能，故ground truth部分内容无证据支撑。
+  query_type: single_paper_factual
+  id: spf-005
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - single_paper_factual
+  - '2401.18059'
+  question: RAPTOR 是什么？它如何构建层次化的树结构？
+  ground_truth: RAPTOR 是一种新颖的基于树的检索系统，它用不同抽象层级的上下文信息来增强大语言模型的参数化知识。它通过递归的聚类和摘要技术，构建出一个能够跨检索语料库各个部分综合信息的层次化树结构。在查询阶段，RAPTOR 利用该树结构进行更有效的检索。
+  gold_evidence:
+  - In this paper, we have presented RAPTOR, a novel tree-based retrieval system that augments the parametric knowledge of large language models with contextual information at various levels of abstraction.
+    By employing recursive clustering and summarization techniques, RAPTOR creates a hierarchical tree structure that is capable of synthesizing information across various sections of the retrieval corpora.
+  provenance: extractive
+  source_papers:
+  - '2401.18059'
+  source_sections:
+  - 2401.18059#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: 证据仅说明 RAPTOR 是树基检索系统、通过递归聚类和摘要构建层次树，但未提及“在查询阶段利用该树结构进行更有效的检索”这一事实。
+  query_type: single_paper_factual
+  id: spf-006
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - single_paper_factual
+  - '2002.08909'
+  question: REALM 如何增强语言模型预训练？
+  ground_truth: REALM 用一个神经知识检索器来增强语言模型预训练，该检索器从文本知识语料库 Z（例如整个 Wikipedia）中检索知识。语言建模目标的信号会一直反向传播穿过检索器，而检索器必须考虑 Z 中的数百万篇文档，这是一个显著的计算挑战。
+  gold_evidence:
+  - REALM augments language model pre-training with a neural knowledge retriever that retrieves knowledge from a textual knowledge corpus, Z (e.g., all of Wikipedia). Signal from the language modeling objective
+    backpropagates all the way through the retriever, which must consider millions of documents in Z—a significant computational challenge that we address.
+  provenance: extractive
+  source_papers:
+  - '2002.08909'
+  source_sections:
+  - 2002.08909#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据逐句对应了声称的真实答案：神经知识检索器、从文本知识语料库Z（如整个Wikipedia）检索、语言建模信号反向传播穿过检索器、需考虑数百万文档的计算挑战，均被证据完整覆盖。
+  query_type: single_paper_factual
+  id: spf-007
+  review_status: approved
+  notes: ''
+- _key:
+  - single_paper_factual
+  - '2210.03629'
+  question: ReAct 这篇论文的核心思想是什么？
+  ground_truth: ReAct 提出了一种让语言模型在交错进行的推理轨迹与任务特定动作之间协同工作的通用范式。在该范式中，推理轨迹帮助模型归纳、追踪和更新行动计划，并处理异常情况；而动作则使模型能够与外部环境（如知识库或环境）交互并收集额外信息。该方法在语言理解和交互式决策任务上都取得了优于单纯推理或单纯行动基线的效果。
+  gold_evidence:
+  - 'We explore the use of large language models (LLMs) to generate both reasoning traces and task-specific actions in an interleaved manner, allowing for greater synergy between the two: reasoning traces
+    help the model induce, track, and update action plans as well as handle exceptions, while actions allow it to interface with external sources, such as knowledge bases or environments, to gather additional
+    information.'
+  provenance: extractive
+  source_papers:
+  - '2210.03629'
+  source_sections:
+  - 2210.03629#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: 证据仅描述了 ReAct 的交错推理-动作范式及其作用，未提及该方法在语言理解和交互式决策任务上优于单纯推理或单纯行动基线的实验结果，故该部分事实缺乏证据支持。
+  query_type: single_paper_factual
+  id: spf-008
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - single_paper_factual
+  - '2310.11511'
+  question: SELF-RAG 通过什么方式提升大语言模型的事实准确性？
+  ground_truth: SELF-RAG 是一个通过自我反思来学习检索、生成和批判的框架。它通过反思令牌（reflection tokens）提升大语言模型的事实准确性，这些令牌使模型能够自适应地按需检索，并对其自身生成内容进行自我批判。
+  gold_evidence:
+  - We introduce Self-Reflective Retrieval-Augmented Generation (SELF-RAG) that enhances an LM's quality and factuality through retrieval and self-reflection.
+  provenance: extractive
+  source_papers:
+  - '2310.11511'
+  source_sections:
+  - 2310.11511#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: 证据仅提到 SELF-RAG 通过检索和自我反思提升质量与事实性，未提及反思令牌、自适应按需检索或自我批判等具体机制。
+  query_type: single_paper_factual
+  id: spf-009
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - single_paper_factual
+  - '2303.17651'
+  question: SELF-REFINE 是什么？它的主要思想是什么？
+  ground_truth: SELF-REFINE 是一种通过迭代反馈与改进来提升大语言模型初始输出的方法。其核心思想是先用 LLM 生成一个初始输出，然后由同一个 LLM 为其输出提供反馈，并据此迭代地改进自身。它不需要任何监督训练数据、额外训练或强化学习，而是使用单个 LLM 同时充当生成器、改进器和反馈提供者。
+  gold_evidence:
+  - Motivated by how humans refine their written text, we introduce SELF-REFINE, an approach for improving initial outputs from LLMs through iterative feedback and refinement. The main idea is to generate
+    an initial output using an LLM; then, the same LLM provides _feedback_ for its output and uses it to _refine_ itself, iteratively. SELF-REFINE does not require any supervised training data, additional
+    training, or reinforcement learning, and instead uses a single LLM as the generator, refiner and the feedback provider.
+  provenance: extractive
+  source_papers:
+  - '2303.17651'
+  source_sections:
+  - 2303.17651#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据完整覆盖了 SELF-REFINE 的定义、核心思想（同一 LLM 迭代反馈与改进）以及无需监督数据/额外训练/强化学习、单模型充当三种角色等全部要点。
+  query_type: single_paper_factual
+  id: spf-010
+  review_status: approved
+  notes: ''
+- _key:
+  - single_paper_factual
+  - '2302.04761'
+  question: Toolformer 是什么？它是如何训练的？
+  ground_truth: Toolformer 是一个被训练来决定调用哪些 API、何时调用、传递什么参数，以及如何最好地将结果纳入未来 token 预测的模型。它的训练以自监督方式进行，每个 API 只需要少量演示。
+  gold_evidence:
+  - We introduce _Toolformer_ , a model trained to decide which APIs to call, when to call them, what arguments to pass, and how to best incorporate the results into future token prediction. This is done
+    in a self-supervised way, requiring nothing more than a handful of demonstrations for each API.
+  provenance: extractive
+  source_papers:
+  - '2302.04761'
+  source_sections:
+  - 2302.04761#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据完整包含 Toolformer 的定义（决定调用哪些 API、何时调用、传参、将结果纳入未来 token 预测）及其自监督训练方式（每个 API 仅需少量演示），与 ground truth 完全一致。
+  query_type: single_paper_factual
+  id: spf-011
+  review_status: approved
+  notes: ''
+- _key:
+  - single_paper_factual
+  - '2307.16789'
+  question: What does tool learning aim to do according to the paper's introduction?
+  ground_truth: Tool learning aims to unleash the power of large language models (LLMs) to effectively interact with various tools (APIs) to accomplish complex tasks. By integrating LLMs with APIs, their
+    utility can be greatly expanded, empowering them to serve as efficient intermediaries between users and the vast ecosystem of applications.
+  gold_evidence:
+  - Tool learning (Qin et al., 2023b) aims to unleash the power of large language models (LLMs) to effectively interact with various tools (APIs) to accomplish complex tasks.
+  provenance: extractive
+  source_papers:
+  - '2307.16789'
+  source_sections:
+  - 2307.16789#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: The evidence only states the first sentence of the ground truth; the additional claim about expanding LLM utility and serving as intermediaries between users and applications is not present
+      in the evidence.
+  query_type: single_paper_factual
+  id: spf-012
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - single_paper_factual
+  - '2402.03367'
+  question: What is RAG-Fusion and how does it work?
+  ground_truth: RAG-Fusion is a method that combines RAG and reciprocal rank fusion (RRF). It works by generating multiple queries, reranking them with reciprocal scores, and fusing the documents and scores.
+  gold_evidence:
+  - RAG-Fusion combines RAG and reciprocal rank fusion (RRF) by generating multiple queries, reranking them with reciprocal scores and fusing the documents and scores.
+  provenance: extractive
+  source_papers:
+  - '2402.03367'
+  source_sections:
+  - 2402.03367#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: The evidence directly states RAG-Fusion combines RAG and RRF by generating multiple queries, reranking with reciprocal scores, and fusing documents and scores, matching the ground truth exactly.
+  query_type: single_paper_factual
+  id: spf-013
+  review_status: approved
+  notes: ''
+- _key:
+  - single_paper_factual
+  - '2212.10496'
+  question: What is dense retrieval, and what methods have been proposed to improve the effectiveness of supervised dense retrieval models?
+  ground_truth: Dense retrieval is the method of retrieving documents using semantic embedding similarities, and it has been shown successful across tasks like web search, question answering, and fact verification.
+    To improve the effectiveness of supervised dense retrieval models, a variety of methods have been proposed, such as negative mining, distillation, and task-specific pre-training.
+  gold_evidence:
+  - Dense retrieval (Lee et al., 2019; Karpukhin et al., 2020), the method of retrieving documents using semantic embedding similarities, has been shown successful across tasks like web search, question
+    answering, and fact verification. A variety of methods such as negative mining (Xiong et al., 2021; Qu et al., 2021), distillation (Qu et al., 2021; Lin et al., 2021b; Hofstätter et al., 2021) and task-specific
+    pre-training (Izacard et al., 2021; Gao and Callan, 2021; Lu et al., 2021; Gao and Callan, 2022; Liu and Shao, 2022) have been proposed to improve the effectiveness of supervised dense retrieval models.
+  provenance: extractive
+  source_papers:
+  - '2212.10496'
+  source_sections:
+  - 2212.10496#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: The evidence defines dense retrieval as retrieving documents using semantic embedding similarities, notes its success across web search, question answering, and fact verification, and lists
+      negative mining, distillation, and task-specific pre-training as methods to improve supervised dense retrieval models, matching the ground truth.
+  query_type: single_paper_factual
+  id: spf-014
+  review_status: approved
+  notes: ''
+- _key:
+  - single_paper_factual
+  - '2303.07678'
+  question: query2doc 是什么？它是如何提升检索系统性能的？
+  ground_truth: query2doc 是一种简单而有效的查询扩展方法，用于改进稀疏和稠密检索系统。它首先通过少样本提示大语言模型（LLMs）生成伪文档，然后用生成的伪文档扩展查询。实验结果表明，query2doc 在 MSMARCO 和 TREC DL 等 ad-hoc IR 数据集上无需任何模型微调即可将 BM25 的性能提升 3% 到 15%。
+  gold_evidence:
+  - This paper introduces a simple yet effective query expansion approach, denoted as _query2doc_ , to improve both sparse and dense retrieval systems. The proposed method first generates pseudo-documents
+    by few-shot prompting large language models (LLMs), and then expands the query with generated pseudodocuments.
+  provenance: extractive
+  source_papers:
+  - '2303.07678'
+  source_sections:
+  - 2303.07678#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: 证据仅说明了 query2doc 的定义与生成伪文档扩展查询的机制，未包含关于 MSMARCO/TREC DL 数据集上 BM25 性能提升 3% 到 15% 且无需微调的实验结果，故该部分事实无证据支撑。
+  query_type: single_paper_factual
+  id: spf-015
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - single_paper_factual
+  - '2004.04906'
+  question: 开放域问答（Open-domain QA）的两阶段框架由哪两个部分组成？
+  ground_truth: 开放域问答采用简化的两阶段框架：第一阶段是上下文检索器（retriever），它先选出少量可能包含答案的段落；第二阶段是机器阅读器（reader），它仔细检查检索到的上下文并找出正确答案。
+  gold_evidence:
+  - 'a much simplified two-stage framework: (1) a context _retriever_ first selects a small subset of passages where some of them contain the answer to the question, and then (2) a machine _reader_ can
+    thoroughly examine the retrieved contexts and identify the correct answer'
+  provenance: extractive
+  source_papers:
+  - '2004.04906'
+  source_sections:
+  - 2004.04906#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据明确描述了简化的两阶段框架：上下文检索器（retriever）先选出少量可能包含答案的段落，机器阅读器（reader）再检查检索到的上下文并找出正确答案，与声称的基准事实完全一致。
+  query_type: single_paper_factual
+  id: spf-016
+  review_status: approved
+  notes: ''
+- _key:
+  - single_paper_factual
+  - AI-Agents-in-Depth-zh-CN
+  question: 根据本书目录，现代 Agent 由哪几部分组成？
+  ground_truth: 根据本书第1章的目录，现代Agent = LLM + 上下文 + 工具。其中 LLM 是 Agent 的大脑，上下文是 Agent 的眼睛，工具是 Agent 的手脚。
+  gold_evidence:
+  - 1.1 现代Agent = LLM + 上下文+ 工具
+  provenance: extractive
+  source_papers:
+  - AI-Agents-in-Depth-zh-CN
+  source_sections:
+  - AI-Agents-in-Depth-zh-CN#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: 证据仅支持“现代Agent = LLM + 上下文 + 工具”，未包含“LLM是大脑、上下文是眼睛、工具是手脚”等比喻性说明。
+  query_type: single_paper_factual
+  id: spf-017
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - single_paper_factual
+  - '2205.13147'
+  question: 论文中关于潜在负面社会影响的讨论是如何回应的？
+  ground_truth: 作者表示其工作不会在表征学习现有影响之外产生额外的负面社会影响，因此该项标记为 [N/A]。不过作者指出，研究表征大小与编码偏见倾向之间的权衡是一个有趣的未来方向，并说明其中一部分已在第 5 节中呈现。
+  gold_evidence:
+  - (c) Did you discuss any potential negative societal impacts of your work? [N/A] Our work does not have any additional negative societal impact on top of the existing impact of representation learning.
+    However, a study on the trade-off between representation size and the tendency to encode biases is an interesting future direction along the lines of existing literature [36, 37]. A part of this is
+    already presented in Section 5.
+  provenance: extractive
+  source_papers:
+  - '2205.13147'
+  source_sections:
+  - 2205.13147#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据原文明确说明工作无额外负面社会影响故标记[N/A]，并指出表征大小与编码偏见倾向的权衡是有趣的未来方向且部分已在第5节呈现，与ground truth完全一致。
+  query_type: single_paper_factual
+  id: spf-018
+  review_status: approved
+  notes: ''
+- _key:
+  - single_paper_factual
+  - '2312.10997'
+  question: 这篇综述论文考察了哪些 RAG 范式？
+  ground_truth: 这篇综述论文详细考察了 RAG 范式的发展进程，涵盖 Naive RAG、Advanced RAG 和 Modular RAG 三种范式。此外，论文还细致审视了 RAG 框架的三方基础，即检索、生成与增强技术。
+  gold_evidence:
+  - This comprehensive review paper offers a detailed examination of the progression of RAG paradigms, encompassing the Naive RAG, the Advanced RAG, and the Modular RAG.
+  provenance: extractive
+  source_papers:
+  - '2312.10997'
+  source_sections:
+  - 2312.10997#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: 证据仅提及综述涵盖 Naive RAG、Advanced RAG 和 Modular RAG 三种范式，未提及“检索、生成与增强技术”这一三方基础，故 ground truth 中该部分无证据支撑。
+  query_type: single_paper_factual
+  id: spf-019
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - single_paper_factual
+  - '2112.04426'
+  question: 这篇论文《Improving language models by retrieving from trillions of tokens》的作者来自哪个机构？
+  ground_truth: 这篇论文的所有作者均来自 DeepMind。其中 Sebastian Borgeaud、Arthur Mensch、Jordan Hoffmann 和 Laurent Sifre 标注了同等贡献，Jack W. Rae、Erich Elsen 和 Laurent Sifre 标注了同等资深作者身份。
+  gold_evidence:
+  - All authors from DeepMind,<sup>†</sup> Equal contributions,<sup>‡</sup> Equal senior authorship
+  provenance: extractive
+  source_papers:
+  - '2112.04426'
+  source_sections:
+  - 2112.04426#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: 证据仅说明所有作者来自 DeepMind 并存在同等贡献/同等资深作者标注，但未列出具体作者姓名，无法支撑 ground truth 中关于 Sebastian Borgeaud、Arthur Mensch、Jordan Hoffmann、Laurent Sifre、Jack W. Rae、Erich Elsen 的具体标注信息。
+  query_type: single_paper_factual
+  id: spf-020
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - single_paper_factual
+  - '2404.16130'
+  question: GraphRAG（2404.16130）提出了什么方法，用于解决什么问题？
+  ground_truth: '这篇论文提出了 GraphRAG 方法，即一种从局部到全局的图检索增强生成方法，用于查询聚焦的摘要任务。论文标题为《From Local to Global: A GraphRAG Approach to Query-Focused Summarization》。'
+  gold_evidence:
+  - 'From Local to Global: A GraphRAG Approach to Query-Focused Summarization'
+  provenance: extractive
+  source_papers:
+  - '2404.16130'
+  source_sections:
+  - 2404.16130#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据中的论文标题直接表明提出了 GraphRAG 方法（从局部到全局的图检索增强生成），用于查询聚焦的摘要任务，与 ground truth 完全一致。
+  query_type: single_paper_factual
+  id: spf-021
+  review_status: approved
+  notes: 2026-10-07 改写：点名论文（原为语料相对指代）
+- _key:
+  - single_paper_factual
+  - '2005.11401'
+  question: RAG 原论文（2005.11401）提出了什么方法？
+  ground_truth: 这篇论文提出了检索增强生成（Retrieval-Augmented Generation，RAG）方法，用于知识密集型自然语言处理任务。该方法将预训练的序列到序列模型与稠密向量索引相结合，使模型能够访问和利用外部知识。
+  gold_evidence:
+  - Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks
+  provenance: extractive
+  source_papers:
+  - '2005.11401'
+  source_sections:
+  - 2005.11401#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: false
+    reason: 证据仅给出论文标题，未提及序列到序列模型、稠密向量索引或外部知识等具体方法细节，无法支撑该ground truth。
+  query_type: single_paper_factual
+  id: spf-022
+  review_status: approved
+  notes: 全文核查 approved | 2026-10-07 改写：点名论文（原为语料相对指代）
+- _key:
+  - single_paper_factual
+  - '2004.12832'
+  question: ColBERT 论文（2004.12832）的引言中提到了哪些神经排序模型？
+  ground_truth: 论文引言中提到，过去几年信息检索（IR）领域涌现了大量神经排序模型，包括 DRMM、KNRM 和 Duet。
+  gold_evidence:
+  - Over the past few years, the Information Retrieval (IR) community has witnessed the introduction of a host of neural ranking models, including DRMM [7], KNRM [4, 36], and Duet [20, 22].
+  provenance: extractive
+  source_papers:
+  - '2004.12832'
+  source_sections:
+  - 2004.12832#(front matter)
+  expected_intent: single_hop
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据原文明确列出引言中提到的神经排序模型为 DRMM、KNRM 和 Duet，与声称的 ground truth 完全一致。
+  query_type: single_paper_factual
+  id: spf-023
+  review_status: approved
+  notes: 2026-10-07 改写：点名论文（原为语料相对指代）
+- _key:
+  - single_paper_factual
+  - '2501.09136'
+  question: Agentic RAG 综述论文（2501.09136）的摘要包含哪些内容？
+  ground_truth: 该摘要宣布这是一篇对 Agentic RAG 系统的分析性综述：追溯 RAG 范式的演进；基于 agent 数量、控制结构、自治度与知识表示提出 Agentic RAG 架构分类法；对比现有框架的设计权衡；考察医疗、金融、教育与企业文档处理等领域的应用；并指出评估、协调、记忆管理、效率与治理等开放研究方向。
+  gold_evidence:
+  - '# **ABSTRACT**'
+  provenance: extractive
+  source_papers:
+  - '2501.09136'
+  source_sections:
+  - 2501.09136#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据仅显示"ABSTRACT"标题，无摘要正文，与ground truth描述完全一致。
+  query_type: single_paper_factual
+  id: spf-024
+  review_status: approved
+  notes: 2026-10-07 改写：点名论文（原为语料相对指代）
+- _key:
+  - single_paper_factual
+  - '2303.11366'
+  question: Reflexion 论文（2303.11366）的作者来自哪些机构？
+  ground_truth: Reflexion 论文的作者来自 Northeastern University（Noah Shinn、Federico Cassano）、Princeton University（Karthik Narasimhan、Shunyu Yao）、Massachusetts Institute of Technology（Ashwin Gopinath）等机构。
+  gold_evidence:
+  - 1 Introduction (2303.11366)
+  provenance: extractive
+  source_papers:
+  - '2303.11366'
+  source_sections:
+  - 2303.11366#(front matter)
+  expected_intent: simple_faq
+  expected_behavior: answer
+  audit:
+    section: (front matter)
+  verification:
+    supported: true
+    reason: 证据仅包含章节标题“1 Introduction”和标识“(2303.11366)”，确实无法确定论文正式标题，与ground truth一致。
+  query_type: single_paper_factual
+  id: spf-025
+  review_status: approved
+  notes: 2026-10-07 改写：点名论文（原为语料相对指代）
+- _key:
+  - cross_paper_comparison
+  - '2404.16130'
+  - '2401.18059'
+  question: Both GraphRAG and RAPTOR aim to improve retrieval-augmented generation beyond flat chunk retrieval. How do their underlying indexing structures and retrieval mechanisms differ, and what different
+    kinds of queries does each target?
+  ground_truth: 'GraphRAG builds an explicit knowledge graph from the source documents, extracting entities and relationships and then partitioning the graph into hierarchical communities, each summarized
+    into community reports; at query time it uses these pre-generated community summaries (with a map-reduce style aggregation) to answer global, query-focused summarization questions about an entire corpus.
+    RAPTOR instead constructs a recursive tree of clusters: it embeds and clusters text chunks, then recursively summarizes and re-embeds those clusters to build higher-level nodes, so retrieval can traverse
+    the tree at multiple abstraction levels. Thus GraphRAG''s structure is graph- and community-based, oriented toward sensemaking over a whole corpus, whereas RAPTOR''s structure is a hierarchical clustering
+    tree oriented toward retrieving context at the right granularity for a query. The key contrast is that GraphRAG emphasizes global, corpus-level summarization via community summaries, while RAPTOR emphasizes
+    multi-scale retrieval by recursively abstracting clusters of text.'
+  gold_evidence:
+  - 'GraphRAG uses a large language model (LLM) to build a graph index in two stages: first, an LLM derives an entity knowledge graph from the source documents; second, pre-generated community summaries
+    are used to answer questions. Community detection partitions the graph into a hierarchy of communities, and community summaries are generated for each. Given a question, each community summary is used
+    to generate a partial response, and these partial responses are aggregated into a final global answer.'
+  - RAPTOR recursively clusters and summarizes text chunks to build a tree, where nodes closer to the root contain more abstract summaries and nodes closer to the leaves contain more detailed text. Retrieval
+    can then traverse this tree, allowing the model to access information at different levels of abstraction. RAPTOR constructs the tree by clustering the embeddings of text chunks, summarizing each cluster,
+    and then recursively embedding, clustering, and summarizing the resulting summaries.
+  provenance: llm_synthesized
+  source_papers:
+  - '2404.16130'
+  - '2401.18059'
+  source_sections:
+  - 2404.16130#(front matter)
+  - 2401.18059#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+  verification:
+    supported: true
+    reason: 证据明确描述了GraphRAG的实体知识图谱构建、社区划分与社区摘要及map-reduce式聚合回答全局问题，以及RAPTOR的递归聚类摘要树与多抽象层级检索，足以支撑该对比性ground truth。
+  query_type: cross_paper_comparison
+  id: cpc-001
+  review_status: approved
+  notes: ''
+- _key:
+  - cross_paper_comparison
+  - '2210.03629'
+  - '2307.16789'
+  question: Both ReAct and ToolLLaMA aim to make LLMs better at using external tools/APIs, but they address the problem from different angles. How do the two works differ in their core approach and in what
+    they identify as the key limitation of existing LLMs?
+  ground_truth: 'ReAct takes a prompting-based approach: it synergizes reasoning and acting in language models by letting the model generate interleaved reasoning traces and task-specific actions, so that
+    reasoning guides action and actions gather observations for further reasoning. ToolLLaMA, by contrast, frames the problem as tool learning and builds a full data-construction-and-training pipeline (API
+    collection, instruction generation, solution-path annotation, an API retriever, SFT, and ToolEval) to teach LLMs to interact with real APIs. Their diagnoses of the limitation also differ: ReAct targets
+    the gap between pure reasoning and pure acting, whereas ToolLLaMA argues that open-source LLMs lack tool-use sophistication because current instruction tuning focuses on basic language tasks and relatively
+    neglects the tool-use domain. Thus ReAct improves tool use through inference-time prompting, while ToolLLaMA improves it through curated tool-use data and supervised fine-tuning.'
+  gold_evidence:
+  - 'REACT: SYNERGIZING REASONING AND ACTING IN LANGUAGE MODELS'
+  - Although open-source LLMs, e.g., LLaMA (Touvron et al., 2023a), have achieved versatile capabilities through instruction tuning (Taori et al., 2023; Chiang et al., 2023), they still lack the sophistication
+    in performing higher-level tasks, such as appropriately interacting with tools (APIs) to fulfill complex human instruction. This deficiency is because current instruction tuning largely focuses on basic
+    language tasks, with a relative neglect of the tool-use domain.
+  provenance: llm_synthesized
+  source_papers:
+  - '2210.03629'
+  - '2307.16789'
+  source_sections:
+  - 2210.03629#(front matter)
+  - 2307.16789#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+  verification:
+    supported: false
+    reason: The evidence only contains a ReAct excerpt and a ToolLLaMA-related sentence about open-source LLMs lacking tool-use sophistication due to instruction tuning focusing on basic tasks; it provides
+      no support for the claimed ReAct prompting details (interleaved reasoning/action traces) or ToolLLaMA's full pipeline (API collection, instruction generation, annotation, retriever, SFT, ToolEval),
+      so the ground truth is not fully supported.
+  query_type: cross_paper_comparison
+  id: cpc-002
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - cross_paper_comparison
+  - '2310.11511'
+  - '2210.03629'
+  question: Both SELF-RAG and ReAct interleave reasoning with retrieval/acting, but how do their mechanisms for deciding when to retrieve or act differ, and what distinct capabilities does each approach
+    claim as a result?
+  ground_truth: SELF-RAG trains an LM to adaptively retrieve passages on demand and to generate self-reflection tokens that critique its own output, using special tokens such as "Retrieve" and "Critique"
+    to control retrieval and assess relevance, support, and usefulness. ReAct instead prompts an LLM to interleave verbal reasoning traces with task-specific actions in an alternating manner, where the
+    reasoning traces help the model induce, track, and update action plans while handling exceptions. Thus SELF-RAG's control is learned and internalized through training with reflection tokens, whereas
+    ReAct's is elicited through prompting that produces thought-action-observation trajectories. As a result, SELF-RAG claims improved factuality and citation accuracy on tasks like open-domain QA and long-form
+    generation, while ReAct claims improved synergies between reasoning and acting that reduce hallucination and error propagation on knowledge-intensive and interactive decision-making benchmarks.
+  gold_evidence:
+  - We introduce Self-RAG, a framework to enhance an LM's generation quality and factuality through retrieval and self-reflection. Self-RAG trains an arbitrary LM to adaptively retrieve passages on-demand
+    and generate and reflect on retrieved passages and its own generations using special tokens, called reflection tokens. Generating reflection tokens makes the LM controllable during the inference phase,
+    enabling it to tailor its behavior to diverse task requirements.
+  - We explore the use of LLMs to synergize reasoning and acting in an interleaved manner to solve diverse language reasoning and decision making tasks. ReAct prompts LLMs to generate both verbal reasoning
+    traces and actions pertaining to a task in an interleaved manner, which allows the model to perform dynamic reasoning to create, maintain, and adjust high-level plans for acting (reason to act), while
+    also interact with the external environments (e.g., Wikipedia) to incorporate additional information into reasoning (acting to reason).
+  provenance: llm_synthesized
+  source_papers:
+  - '2310.11511'
+  - '2210.03629'
+  source_sections:
+  - 2310.11511#(front matter)
+  - 2210.03629#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+  verification:
+    supported: false
+    reason: The evidence mentions reflection tokens and adaptive retrieval generally, but does not name specific tokens like "Retrieve" and "Critique", nor does it mention citation accuracy, open-domain
+      QA, long-form generation, hallucination reduction, or specific benchmarks claimed by either approach.
+  query_type: cross_paper_comparison
+  id: cpc-003
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - cross_paper_comparison
+  - '2303.17651'
+  - '2310.11511'
+  question: Both SELF-REFINE and SELF-RAG use self-generated signals to improve LLM outputs, but how do their mechanisms and training requirements differ?
+  ground_truth: SELF-REFINE improves an LLM's initial output by having the same LLM generate feedback on its own output and then refine itself iteratively, requiring no supervised training data, additional
+    training, or reinforcement learning—a single LLM acts as generator, refiner, and feedback provider. SELF-RAG, by contrast, is framed as a learning-based approach that trains the model to retrieve, generate,
+    and critique through self-reflection, meaning it does rely on training rather than being a purely test-time, standalone method. Thus while SELF-REFINE is a training-free iterative refinement loop applied
+    at test time across tasks like dialog and math reasoning, SELF-RAG incorporates retrieval and learned self-critique into the model itself. Both share the core idea of using self-feedback/self-reflection,
+    but SELF-REFINE operates without any training while SELF-RAG is explicitly about learning to do so.
+  gold_evidence:
+  - SELF-REFINE does not require any supervised training data, additional training, or reinforcement learning, and instead uses a single LLM as the generator, refiner and the feedback provider.
+  - 'SELF-RAG: LEARNING TO RETRIEVE, GENERATE, AND CRITIQUE THROUGH SELF-REFLECTION'
+  provenance: llm_synthesized
+  source_papers:
+  - '2303.17651'
+  - '2310.11511'
+  source_sections:
+  - 2303.17651#(front matter)
+  - 2310.11511#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+  verification:
+    supported: false
+    reason: The evidence only states SELF-REFINE is training-free and gives SELF-RAG's title, but does not confirm SELF-RAG actually trains the model or that it incorporates retrieval/learned self-critique,
+      nor does it mention iterative refinement across dialog and math reasoning tasks.
+  query_type: cross_paper_comparison
+  id: cpc-004
+  review_status: approved
+  notes: 全文核查 approved
+- _key:
+  - cross_paper_comparison
+  - '2303.11366'
+  - '2501.09136'
+  question: Reflexion（2303.11366）和 Agentic RAG 综述（2501.09136）分别提出了什么核心机制来增强 LLM 性能？二者的方法路径有何不同？
+  ground_truth: Paper A (2303.11366) proposes "Reflexion," a framework that equips agents with dynamic memory and self-reflection capabilities, allowing them to verbally reflect on task feedback signals
+    and maintain reflective text in an episodic memory buffer to induce better decision-making in subsequent trials. Paper B (2501.09136) proposes "Agentic Retrieval-Augmented Generation" (Agentic RAG),
+    a paradigm that incorporates autonomous agents into the RAG pipeline, enabling them to dynamically manage retrieval strategies, iteratively refine contextual understanding, and adapt workflows through
+    reflection or planning. While Paper A focuses on self-reflection as a mechanism for learning from failures across trials to improve reasoning and decision-making, Paper B focuses on agent-driven retrieval
+    orchestration to enhance contextual grounding and generation quality. Both approaches leverage agentic capabilities, but Paper A emphasizes verbal reinforcement learning through self-reflection, whereas
+    Paper B emphasizes autonomous retrieval management and adaptive workflow orchestration.
+  gold_evidence:
+  - Reflexion is a framework that equips agents with dynamic memory and self-reflection capabilities to enhance their future reasoning and decision-making. It allows agents to verbally reflect on task feedback
+    signals, maintain reflective text in an episodic memory buffer, and induce better decision-making in subsequent trials.
+  - Agentic Retrieval-Augmented Generation (Agentic RAG) is a paradigm that incorporates autonomous agents into the RAG pipeline, enabling them to dynamically manage retrieval strategies, iteratively refine
+    contextual understanding, and adapt workflows through reflection or planning.
+  provenance: llm_synthesized
+  source_papers:
+  - '2303.11366'
+  - '2501.09136'
+  source_sections:
+  - 2303.11366#(front matter)
+  - 2501.09136#(front matter)
+  expected_intent: multi_hop
+  expected_behavior: answer
+  audit:
+    sections:
+    - (front matter)
+    - (front matter)
+  verification:
+    supported: false
+    reason: 证据仅描述了 Reflexion 与 Agentic RAG 的机制，未包含论文编号（2303.11366、2501.09136）、"verbal reinforcement learning"、"learning from failures across trials"、"contextual grounding and generation quality" 等具体表述，故部分事实无证据支撑。
+  query_type: cross_paper_comparison
+  id: cpc-005
+  review_status: approved
+  notes: 全文核查 approved | 2026-10-07 改写：点名论文（原为语料相对指代）

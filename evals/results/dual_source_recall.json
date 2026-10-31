@@ -1,0 +1,2502 @@
+[
+ {
+  "run": "evals/results/runs/V0/20261007_112205",
+  "n_multi_source": 60,
+  "by_query_type": {
+   "cross_paper_comparison": {
+    "n": 27,
+    "both_top5": 77.8
+   },
+   "cross_paper_multi_hop": {
+    "n": 23,
+    "both_top5": 87.0
+   },
+   "term_ambiguity": {
+    "n": 10,
+    "both_top5": 30.0
+   }
+  },
+  "both_anywhere_pct": 85.0,
+  "both_top10_pct": 83.3,
+  "both_top5_pct": 73.3,
+  "final_contexts_pct": 81.7,
+  "mean_partial_coverage": 0.892,
+  "rows": [
+   {
+    "id": "cpc-001",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-002",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-003",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-004",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-005",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "cpc-006",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 0,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-007",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-008",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-009",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "cpc-010",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-011",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-012",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-013",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-014",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-015",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-016",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-017",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-018",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-019",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-020",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "cpc-021",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "cpc-022",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-023",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-024",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-025",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-026",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-027",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-001",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-002",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 0,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-003",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-004",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-005",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 0,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-006",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-007",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-008",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-009",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-010",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-011",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-012",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-013",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-014",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpm-015",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-016",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-017",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-018",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-019",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-020",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-021",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-022",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-023",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-001",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 1,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-002",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.6666666666666666
+   },
+   {
+    "id": "tam-003",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-004",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.6666666666666666
+   },
+   {
+    "id": "tam-005",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 0,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-006",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "tam-007",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-008",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.6666666666666666
+   },
+   {
+    "id": "tam-009",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-010",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 0,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   }
+  ]
+ },
+ {
+  "run": "evals/results/runs/V1/20261007_113831",
+  "n_multi_source": 60,
+  "by_query_type": {
+   "cross_paper_comparison": {
+    "n": 27,
+    "both_top5": 66.7
+   },
+   "cross_paper_multi_hop": {
+    "n": 23,
+    "both_top5": 78.3
+   },
+   "term_ambiguity": {
+    "n": 10,
+    "both_top5": 20.0
+   }
+  },
+  "both_anywhere_pct": 63.3,
+  "both_top10_pct": 63.3,
+  "both_top5_pct": 63.3,
+  "final_contexts_pct": 63.3,
+  "mean_partial_coverage": 0.769,
+  "rows": [
+   {
+    "id": "cpc-001",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-002",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-003",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-004",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-005",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "cpc-006",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpc-007",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-008",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-009",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "cpc-010",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-011",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-012",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-013",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-014",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-015",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "cpc-016",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-017",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-018",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-019",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-020",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "cpc-021",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "cpc-022",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpc-023",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-024",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-025",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpc-026",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-027",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpm-001",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-002",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpm-003",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-004",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-005",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpm-006",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-007",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-008",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-009",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-010",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpm-011",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-012",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpm-013",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-014",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-015",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-016",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpm-017",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-018",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-019",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-020",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-021",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-022",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-023",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-001",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-002",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.6666666666666666
+   },
+   {
+    "id": "tam-003",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "tam-004",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.3333333333333333
+   },
+   {
+    "id": "tam-005",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.6666666666666666
+   },
+   {
+    "id": "tam-006",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "tam-007",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.6666666666666666
+   },
+   {
+    "id": "tam-008",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.6666666666666666
+   },
+   {
+    "id": "tam-009",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-010",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.6666666666666666
+   }
+  ]
+ },
+ {
+  "run": "evals/results/runs/V2/20261007_115349",
+  "n_multi_source": 60,
+  "by_query_type": {
+   "cross_paper_comparison": {
+    "n": 27,
+    "both_top5": 74.1
+   },
+   "cross_paper_multi_hop": {
+    "n": 23,
+    "both_top5": 87.0
+   },
+   "term_ambiguity": {
+    "n": 10,
+    "both_top5": 30.0
+   }
+  },
+  "both_anywhere_pct": 71.7,
+  "both_top10_pct": 71.7,
+  "both_top5_pct": 71.7,
+  "final_contexts_pct": 71.7,
+  "mean_partial_coverage": 0.825,
+  "rows": [
+   {
+    "id": "cpc-001",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-002",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-003",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-004",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-005",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "cpc-006",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpc-007",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-008",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-009",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "cpc-010",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-011",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-012",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-013",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-014",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-015",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-016",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-017",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-018",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-019",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-020",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "cpc-021",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-022",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpc-023",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-024",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-025",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpc-026",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-027",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpm-001",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-002",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpm-003",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-004",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-005",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpm-006",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-007",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-008",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-009",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-010",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpm-011",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-012",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-013",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-014",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-015",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-016",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-017",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-018",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-019",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-020",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-021",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-022",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-023",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-001",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-002",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.3333333333333333
+   },
+   {
+    "id": "tam-003",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-004",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.6666666666666666
+   },
+   {
+    "id": "tam-005",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.6666666666666666
+   },
+   {
+    "id": "tam-006",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "tam-007",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.6666666666666666
+   },
+   {
+    "id": "tam-008",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.6666666666666666
+   },
+   {
+    "id": "tam-009",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-010",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   }
+  ]
+ },
+ {
+  "run": "evals/results/runs/V3/20261007_121017",
+  "n_multi_source": 60,
+  "by_query_type": {
+   "cross_paper_comparison": {
+    "n": 27,
+    "both_top5": 74.1
+   },
+   "cross_paper_multi_hop": {
+    "n": 23,
+    "both_top5": 87.0
+   },
+   "term_ambiguity": {
+    "n": 10,
+    "both_top5": 20.0
+   }
+  },
+  "both_anywhere_pct": 70.0,
+  "both_top10_pct": 70.0,
+  "both_top5_pct": 70.0,
+  "final_contexts_pct": 70.0,
+  "mean_partial_coverage": 0.808,
+  "rows": [
+   {
+    "id": "cpc-001",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-002",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-003",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-004",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-005",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "cpc-006",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpc-007",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-008",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-009",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "cpc-010",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-011",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-012",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-013",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-014",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-015",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-016",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-017",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-018",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-019",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-020",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "cpc-021",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-022",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpc-023",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-024",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-025",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpc-026",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpc-027",
+    "query_type": "cross_paper_comparison",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpm-001",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-002",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpm-003",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-004",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-005",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpm-006",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-007",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-008",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-009",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-010",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.5
+   },
+   {
+    "id": "cpm-011",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-012",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-013",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-014",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-015",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-016",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-017",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-018",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-019",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-020",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-021",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-022",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "cpm-023",
+    "query_type": "cross_paper_multi_hop",
+    "n_gold": 2,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-001",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.6666666666666666
+   },
+   {
+    "id": "tam-002",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.3333333333333333
+   },
+   {
+    "id": "tam-003",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "tam-004",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.3333333333333333
+   },
+   {
+    "id": "tam-005",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-006",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.0
+   },
+   {
+    "id": "tam-007",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.6666666666666666
+   },
+   {
+    "id": "tam-008",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.6666666666666666
+   },
+   {
+    "id": "tam-009",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 1,
+    "both_top10": 1,
+    "both_top5": 1,
+    "final_contexts": 1,
+    "partial_coverage": 1.0
+   },
+   {
+    "id": "tam-010",
+    "query_type": "term_ambiguity",
+    "n_gold": 3,
+    "both_anywhere": 0,
+    "both_top10": 0,
+    "both_top5": 0,
+    "final_contexts": 0,
+    "partial_coverage": 0.3333333333333333
+   }
+  ]
+ }
+]
