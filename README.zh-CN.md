@@ -33,20 +33,32 @@
 ## 架构
 
 ```mermaid
-flowchart LR
-    Q[用户问题] --> IR[意图路由]
-    IR -->|simple_faq| FAQ[稠密检索]
-    IR -->|single_hop| SH[混合检索 + 精排]
-    IR -->|multi_hop| MH[Agentic 检索循环]
-    FAQ --> EG[证据门禁]
-    SH --> EG
-    MH --> EG
-    EG --> GEN[生成]
-    GEN --> CR[Critique<br/>IsSup + IsUse]
-    CR --> AGG[聚合<br/>+ 引用覆盖率检查]
+flowchart TD
+    Q[用户问题] --> SUM[summarize_history]
+    SUM --> IR[intent_router]
+    IR -->|simple_faq| FAQ[faq_answer<br/>稠密检索 k=7]
+    IR -->|single_hop / multi_hop| RW[rewrite_query<br/>≤3 个自包含子问题]
+    RW -->|不清晰| CLR[request_clarification<br/>interrupt]
+    CLR --> RW
+    RW -->|清晰| AG
+    subgraph AG[agent 子图<br/>每个子问题并行]
+      ORC[orchestrator] -->|工具调用| TOOLS[混合检索 / 取父块]
+      TOOLS --> BUD{超 token 预算?}
+      BUD -->|是| CMP[compress_context]
+      BUD -->|否| ORC
+      CMP --> ORC
+      ORC -->|预算耗尽| FB[fallback_response]
+      ORC -->|无工具调用| COL[collect_answer]
+      FB --> COL
+      COL --> CR{Critique<br/>IsSup + IsUse}
+      CR -->|不通过| ORC
+    end
+    AG --> AGG[aggregate_answers<br/>引用覆盖率检查]
+    FAQ --> AGG
+    AGG --> ANS[回答]
 ```
 
-意图路由会在任何检索动作发生之前先对每一轮提问分类。`simple_faq` 只做一次稠密检索；`single_hop` 走完整的混合检索 + 精排流水线；`multi_hop` 进入带预算限制的工具调用循环。所有路径生成的答案都汇入证据门禁（幻觉否决），再经过生成层与 Critique 节点，最后在聚合层做引用覆盖率检查。
+意图路由会在任何检索动作发生之前先对每一轮提问分类，但真正的硬分流只有一条：`simple_faq` 走纯稠密检索快路径（k=7，不跑 BM25、不精排、不改写）。`single_hop` 和 `multi_hop` 共用同一条 agentic 路径——`rewrite_query` 把问题改写成最多三个自包含子问题（不清晰时先中断澄清），每个子问题并行派发一个独立的 agent 子图，跑混合检索循环，再过 Critique。FAQ 与 agent 的答案最终都汇入 `aggregate_answers` 做引用覆盖率检查。
 
 ## 技术实现
 
@@ -56,7 +68,7 @@ flowchart LR
 
 ### 双轨自反思
 
-检索轨是证据门禁：每份草稿答案都会对照检索到的上下文做事实矛盾检查。生成轨是 Critique 节点，执行两项检查——IsSup（每一条事实性声明都必须有证据支撑）与 IsUse（答案必须真正回应问题）。检查失败会带着结构化反馈触发一次有界重试；熔断器把重试预算限制在 2 次。
+检索轨是 agent 自己的检索循环：orchestrator 判断已检索到的证据是否覆盖问题，并可发起有预算上限的补充检索。生成轨是 Critique 节点，对草稿答案执行两项检查——IsSup（每一条事实性声明都必须有检索到的上下文支撑）与 IsUse（答案必须真正回应问题）。检查不通过会注入结构化反馈并触发一次有界重试；FAQ 快路径完全跳过这个节点。
 
 ### 强制引用
 

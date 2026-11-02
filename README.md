@@ -33,20 +33,32 @@ This project is an architectural redesign based on [agentic-rag-for-dummies](htt
 ## Architecture
 
 ```mermaid
-flowchart LR
-    Q[User Query] --> IR[Intent Router]
-    IR -->|simple_faq| FAQ[Dense Retrieval]
-    IR -->|single_hop| SH[Hybrid Retrieval + Rerank]
-    IR -->|multi_hop| MH[Agentic Retrieval Loop]
-    FAQ --> EG[Evidence Gate]
-    SH --> EG
-    MH --> EG
-    EG --> GEN[Generate]
-    GEN --> CR[Critique<br/>IsSup + IsUse]
-    CR --> AGG[Aggregate<br/>+ Citation Coverage Check]
+flowchart TD
+    Q[User Query] --> SUM[summarize_history]
+    SUM --> IR[intent_router]
+    IR -->|simple_faq| FAQ[faq_answer<br/>dense retrieval k=7]
+    IR -->|single_hop / multi_hop| RW[rewrite_query<br/>≤3 self-contained questions]
+    RW -->|unclear| CLR[request_clarification<br/>interrupt]
+    CLR --> RW
+    RW -->|clear| AG
+    subgraph AG[agent subgraph<br/>one per sub-question, parallel]
+      ORC[orchestrator] -->|tool calls| TOOLS[hybrid search / parent retrieval]
+      TOOLS --> BUD{token budget?}
+      BUD -->|over| CMP[compress_context]
+      BUD -->|ok| ORC
+      CMP --> ORC
+      ORC -->|budget exhausted| FB[fallback_response]
+      ORC -->|no tool calls| COL[collect_answer]
+      FB --> COL
+      COL --> CR{Critique<br/>IsSup + IsUse}
+      CR -->|failed| ORC
+    end
+    AG --> AGG[aggregate_answers<br/>citation coverage check]
+    FAQ --> AGG
+    AGG --> ANS[Answer]
 ```
 
-The intent router classifies each turn before any retrieval work happens. `simple_faq` takes a single dense lookup; `single_hop` runs the full hybrid pipeline with reranking; `multi_hop` enters the agentic loop with budgeted tool calls. Answers from every path converge at an Evidence Gate (hallucination veto), pass through the generation layer and the Critique node, and are finally aggregated with a citation-coverage check.
+The intent router classifies each turn before any retrieval work happens, but only one fork is a separate path: `simple_faq` goes to a dense-only fast path (k=7, no BM25, no reranker, no rewrite). `single_hop` and `multi_hop` share the same agentic path — `rewrite_query` turns the question into at most three self-contained sub-questions (unclear queries interrupt for clarification first), and each sub-question fans out as an independent agent subgraph that runs the hybrid retrieval loop, then Critique. FAQ and agent answers both converge at `aggregate_answers`, which enforces citation coverage.
 
 ## Technical Implementation
 
@@ -56,7 +68,7 @@ Recall stage fuses BM25 sparse signals with BGE-M3 dense embeddings through Qdra
 
 ### Dual-track self-reflection
 
-The retrieval track is an Evidence Gate: every drafted answer is checked for factual contradictions against the retrieved contexts. The generation track is a Critique node running two checks — IsSup (every factual claim must be supported by the evidence) and IsUse (the answer must actually address the question). Failed checks trigger one bounded retry with structured feedback; a circuit breaker caps the retry budget at 2.
+The retrieval track is the agent's own search loop: the orchestrator decides whether the retrieved evidence covers the question and can issue budgeted follow-up searches. The generation track is the Critique node, which runs two checks on the drafted answer — IsSup (every factual claim must be supported by the retrieved contexts) and IsUse (the answer must actually address the question). A failed check injects structured feedback and triggers one bounded retry; the FAQ fast path skips this node entirely.
 
 ### Enforced citations
 
